@@ -18,19 +18,20 @@ The first step is to read in the data. Since the data is a csv file, this can be
 ```{r}
 #| warning: false
 #| message: false
+#| #load libraries
 library(tidyverse)
 library(psych)
 library(caret)
+# read in data set
 diabetes_data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 diabetes_data
-unique_values <- unique(diabetes_data$Income)
-unique_values
 
 ```
 
 The first data step in EDA is to check for missing values. This data was already cleaned so missing values are not expected. Using is.na() shows that there are in fact no missing values.
 
 ```{r}
+# check for missing values in each column
 colSums(is.na(diabetes_data))
 
 ```
@@ -38,6 +39,7 @@ colSums(is.na(diabetes_data))
 The distinct() function can be used to verify that there are no missing values in a form other than NA. Looking at the output below, we can see that there is nothing unusual. Most of the categories have 0's and 1's which generally correspond to no (0) and yes(1), with the exception of Fruits, Veggies and Sex. The categories with other numbers have various meanings depending on the category but the numbers are consistent with what is expected based on the [kaggle website's Diabetes Health Indicators Dataset Notebook](https://www.kaggle.com/code/alexteboul/diabetes-health-indicators-dataset-notebook).
 
 ```{r}
+#check for unusual values that could indicate missingness
 unique_values <- diabetes_data |>
   distinct()
 unique_values
@@ -49,6 +51,7 @@ unique_values
 The next step is to summarize the variables. The simplest method for doing so is to use describe() from the psych package. Below is the summary for this data. Nothing appears out of the ordinary in the summary. As we would expect, most have a minimum of 0 and a maximum of 1. BMI, MentHlth and PhysHlth are the only variables that are truly numeric and this is reflected in the summary.
 
 ```{r}
+# summarize variables
 describe(diabetes_data)
 
 ```
@@ -56,6 +59,7 @@ describe(diabetes_data)
 For the most of the data, since it is categorical, we can look at contingency tables to get an idea of their relationship with diabetes status. For this purpose, the data is going to be manipulated first. The categorical variables will be converted to factors and the levels renamed to better communicate what the levels actually mean. For this purpose, factor() will be use as it allows renaming of levels and specifying if a factor is ordered, as some of the categories are.
 
 ```{r}
+#convert categorical columns to factors
 diabetes <- diabetes_data |>
   mutate(Diabetes_binary = as.factor(Diabetes_binary),
          Education = factor(Education, ordered = TRUE, levels = c(1:6),
@@ -81,7 +85,9 @@ diabetes <- diabetes_data |>
          HighBP = factor(HighBP, levels = c(0, 1), labels = c("No", "Yes")),
          HighChol = factor(HighChol, levels = c(0, 1), labels = c("No", "Yes")),
          Fruits = factor(Fruits, levels = c(0, 1), labels = c("None", ">= 1/day")),
-         Veggies = factor(Veggies, levels = c(0, 1), labels = c("None", ">= 1/day"))
+         Veggies = factor(Veggies, levels = c(0, 1), labels = c("None", ">= 1/day")),
+         GenHlth = factor(GenHlth, levels = c(1:5), labels = c("Excellent", "Very Good", "Good", "Fair",
+                                                               "Poor"))
          )
 diabetes
 
@@ -90,28 +96,347 @@ diabetes
 Now that the data is properly formatted, contingency tables can be generated. The distribition of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process.
 
 ```{r}
-diabetes_data |>
+#Contingency table for sex
+diabetes |>
   group_by(Sex, Diabetes_binary) |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
 ```
 
+We can also use bar charts to visualize the proportions of category levels relative to the diabetes variable. This visualization makes it easier to see the similarities or differences in proportions.
+
+```{r}
+ggplot(diabetes, aes(x = Sex, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without diabetes by Gender") +
+  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic"))
+
+```
+
 In looking at income, the prevalence of diabetes generally decreases as income increases, indicating that socioeconomic status may be an important predictor of diabetes. This variable will be included in the model fitting process.
 
 ```{r}
-diabetes_data |>
+#Contingency table for income
+diabetes |>
   group_by(Income, Diabetes_binary) |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
 ```
 
+```{r}
+ggplot(diabetes, aes(x = Income, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without diabetes by income level") +
+  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+Next, we will examine the contingency table for eductation. Based on the output, it appears that the decreases with income. This is consistent with the contingency table for income, since income is generally associated with level of education. Looking at the bar chart, the patterns for income and education look nearly identical.
+
+```{r}
+#Contingency table for Education
+diabetes |>
+  group_by(Education, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+Looking at the bar chart, the patterns for income and education look nearly identical.
+
+```{r}
+ggplot(diabetes, aes(x = Education, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without diabetes by education level") +
+  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+The potential relationship between education and income should be examined because these two variables could be correlated and therefore redundant, which could affect the model predictions. To get a view of the relationship, a contingency table can be created. In looking at the output below, it appears that the number of individuals generally decreases as income level increases at the lower education levels, and increases at the higher education levels, suggesting that these variables are correlated.
+
+```{r}
+#contingency table for education and income
+cont_table <- diabetes |>
+  group_by(Education, Income) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Income, values_from = count)
+cont_table
+
+```
+
+We can look into these variables further by testing independence with a Chi-Sqare test. The analysis, shown below, indicates that these variables are correlated, as indicated by the low p-value. Since education has a low frequency of numbers in the "No School" category, dropping this variable from the model fitting is a practical choice.
+
+```{r}
+cont_matrix <- as.matrix(cont_table[, -1])
+chisquare_test <- chisq.test(cont_matrix)
+chisquare_test
+
+```
+
+Next, we will examine the contingency table for age. Based on the output, it appears that the incidence of diabetes generally increases with age, so this variable will be included in the model fitting.
+
+```{r}
+#Contingency table for age
+diabetes |>
+  group_by(Age, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+```{r}
+ggplot(diabetes, aes(x = Age, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without diabetes by Age") +
+  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+Next, the relationship between the diabetes variable and Fruits will be examined. The proportions for no fruit and 1 or more a day are similar, 0.129 vs 0.158) so this variable will be excluded from modeling.
+
+```{r}
+#Contingency table for Fruits
+diabetes |>
+  group_by(Fruits, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+```
+
+Similarly, vegetable consumption does not appear to be an important variable for diabetes classification, with proportions of 0.18 and 0.13 for the diabetes category.
+
+```{r}
+#Contingency table for Veggies
+diabetes |>
+  group_by(Veggies, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+```
+
+The contingency table for PhysActivity shows that the proportion of those with diabetes who do not exercise is nearly double that of those without diabetes who do exercise. This variable may be important for diabetes prediction, although it's relevance may be more closely tied to how much a person exercises in the time period specified. The question to respondents was if they had engaged in any physical activity in the last 30 days so it does not take into account frequency of exercise in that time period. However, may people who exercise at all try to do so regularly, so this variable will be included in the modeling process.
+
+```{r}
+#Contingency table for PhysActivity
+diabetes |>
+  group_by(PhysActivity, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+```{r}
+ggplot(diabetes, aes(x = PhysActivity, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without diabetes by Physical Activity") +
+  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic"))
+
+```
+
+The HvyAlcoholConsump variable may be important for diabetes prediction. The contingency table below shows that the proportion of individuals who don't drink alcohol heavily and have diabetes is close to 3 times that of those who do drink heavily and have diabetes.
+
+```{r}
+#Contingency table for HvyAlcoholConsum
+diabetes |>
+  group_by(HvyAlcoholConsump, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+```
+
+```{r}
+ggplot(diabetes, aes(x = HvyAlcoholConsump, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without 
+       diabetes by Alcohol Consumption Activity") +
+  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic"))
+
+```
+
+The NoDocbcCost represents whether an individual did or did not see a doctor because of the healthcare cost. The contingency table shows that the proportions of individuals with diabetes for the two NoDocBcCost levels were similar, at 0.136 and 0.175. Because of the similarity, this variable will not be included in model fitting.
+
+```{r}
+#Contingency table for NoDocbcCost
+diabetes |>
+  group_by(NoDocbcCost, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+The AnyHealthcare variable is similar in proportion for both levels for those with diabetes, with proportions of 0.115 and 0.140. This variable will be excluded from model fitting.
+
+```{r}
+#Contingency table for AnyHealthcare
+diabetes |>
+  group_by(AnyHealthcare, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+The contingency table below for the HeartDiseaseorAttack variable suggests that this variable may be important for prediction. Nearly 32% of respondents who had heart disease or a heart attack had diabetes, compared to 12% of those who did not have these conditions.
+
+```{r}
+#Contingency table for NHeartDiseaseorAttack
+diabetes |>
+  group_by(HeartDiseaseorAttack, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+Below is a visualization of the HeartDiseaseorAttack variable.
+
+```{r}
+ggplot(diabetes, aes(x = HeartDiseaseorAttack, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without 
+       diabetes by Heart Disease or Hart Attack Status") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
+
+```
+
+The contingency table for stroke is shown below. Nearly 32% of those respondents who had a stroke had diabetes, compared to those who didn't have a stroke (13%). This suggests that this variable may be important for predicition.
+
+```{r}
+#Contingency table for Stroke
+diabetes |>
+  group_by(Stroke, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+The Smoker variable does not appear to be particularly important for diabetes prediction an the proportions are similar. This seems contradictory since it is known that smokers are more likely to have diabetes since nicotine makes cells less responsive to insulin. But the question for respondents was "Have you smoked at least 100 cigarettes (5 packs) in your entire life?" which communicates nothing about when in their life that was and if they are currently smoking. Consequently, this variable will be left out of the model fitting.
+
+```{r}
+#Contingency table for Smoker
+diabetes |>
+  group_by(Smoker, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+```{r}
+ggplot(diabetes, aes(x = Smoker, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of Individuals with and without 
+       Diabetes by Smoking Status") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
+
+```
+
+The contingency table for CholCheck shows that the proportions of those who have had their cholesterol checked in the last 5 years and those who have not and have diabetes are 0.025 and 0.144. While the difference may be significant, people who are sick or have chronic conditions are more likely to have their cholesterol checked more frequently than healthy individuals. Thus this variable is not necessarily important for prediction, but rather reflective of diabetes management, which may also be accompanied by other health conditions. For these reasons, this variable will be excluded from the model fitting.
+
+```{r}
+#Contingency table for CholCheck
+diabetes |>
+  group_by(CholCheck, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+The contingency table for DiffWalk is below. For individuals with diabetes, the proportion of those who responded yes to difficulty walking or climbing stairs is 0.307 compared to that of those who responded no, 0.105. This variable may be important for predicting diabetes and will be included in model fitting.
+
+```{r}
+#Contingency table for DiffWalk
+diabetes |>
+  group_by(DiffWalk, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+```{r}
+8742/(8742+136109)
+26604/(26604+82225)
+
+```
+
+The contingency table for HighChol shows proportions of 0.08 for those who don't have high cholesterol but have diabetes, compared to 0.22 for those how have high cholesterol and diabetes. Since this is more than a 2-fold difference and diabetes and high blood pressure often occur together, this variable will be included in the model fitting.
+
+```{r}
+#Contingency table for HighChol
+diabetes |>
+  group_by(HighChol, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
+Similar to HighChol, HighBP among those with diabetes was 4 times that of those without high blood pressure. High blood pressure often occurs in conjunction with diabetes as part of metabolic syndrome and so will be included in the model fitting.
+
+```{r}
+#Contingency table for HighBP
+diabetes |>
+  group_by(HighBP, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+
+```
+
 We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
 
 ```{r}
-ggplot(data = diabetes_data, aes(BMI)) +
+ggplot(data = diabetes, aes(BMI)) +
   geom_histogram(binwidth = 2, fill = "darksalmon", color = "black") +
   labs(y = "Count")
 
 ```
+
+To view the strength of the relationship between BMI and diabetes, we can use point-biserial correlation, which allows calculation of the correlation between a dichotomous variable and a continuous variable. Point-biserial correlation is a modified form of Pearson correlation and can be performed using cor.test(). Both variables need to be numeric. The output p-value and "true correlation" indicate that the correlation between diabetes and BMI is significant, which is consistent with what is known about type II diabetes. This variable will be included in modeling.
+
+```{r}
+#convert Diabetes_binary to numeric
+diabetes_corr <- diabetes |>
+  select(Diabetes_binary, BMI) |>
+  mutate(Diabetes_binary = as.numeric(Diabetes_binary))
+#Perform Point-Biserial Correlation
+cor.test(diabetes_corr$BMI, diabetes_corr$Diabetes_binary)
+
+```
+
+MentHlth
+
+```{r}
+ggplot(data = diabetes, aes(MentHlth)) +
+  geom_histogram(binwidth = 2, fill = "darksalmon", color = "black") +
+  labs(y = "Count")
+
+```
+
+PhysHlth
+
+```{r}
+ggplot(data = diabetes, aes(PhysHlth)) +
+  geom_histogram(binwidth = 2, fill = "darksalmon", color = "black") +
+  labs(y = "Count")
+
+```
+
+[Model Fitting](file:///C:/Users/kimel/Documents/FinalProjectMB/docs/Modeling.html)
