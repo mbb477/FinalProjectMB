@@ -9,7 +9,9 @@ editor: visual
 
 The Behavioral Risk Factor Surveillance System (BRFSS) is a system run by the Centers for Disease Control and Prevention (CDC) that uses telephone surveys to collect health-related information from individuals in the United States every year. The system began in 1984 and collects more than 400,000 responses each year. The Diabetes Health Indicators Dataset that will be discussed here is a subset of the data obtained from the BRFSS for 2015. This data set contains 21 of the original 330 variables and 253.680 of the 441,455 original responses. Retention of the 21 variables in this data was based on what was believed to have potential relevance for diabetes.
 
-The goal of this document is to use exploratory data analysis (EDA) to understand the data through validation, examining missingness, cleaning up the data and investigating distributions. This information can also help us decide what variables to include in our model. The end goal of this project is to obtain the best model to predict diabetes. Details of the EDA are presented below. The response variable is Diabetes_binary, where 0 indicates that the individual does not have diabetes and 1 means the individual has prediabetes or diabetes. The variables chosen to be included in the modeling process are ....... body mass index (BMI).....
+The goal of this document is to use exploratory data analysis (EDA) to understand the data through validation, examining missingness, cleaning up the data and investigating distributions. This information can also help us decide what variables to include in our model. The end goal of this project is to obtain the best model to predict diabetes. Details of the EDA are presented below. The response variable is Diabetes_binary, where 0 indicates that the individual does not have diabetes and 1 means the individual has prediabetes or diabetes.
+
+The variables chosen to be included in the modeling process are HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, PhysActivity, HvyAlcoholConsump, GenHlth, MentHlth, PhysHlth, DiffWalk, Age and Income. HighBP corresponds to whether an individual has ever been told they have high blood pressure. HighChol corresponds to whether an individual has ever been told that they have high cholesterol. Both of these variables are often present in diabetics and are part of the conditions encompassing metabolic syndrome. BMI is body mass index and is known to greatly increase diabetes risk as the increased weigh increases insulin resistance. Stroke corresponds to whether and individual has ever had a stroke or not. HeartDiseaseorAttack corresponds to whether and individual has ever had a heart attack or has heart disease. The risk of both of these conditions is increased in diabetics. PhysActivity corresponds to whether an individual has exercised in the last 30 days. It does not indicate anything about frequency over those 30 days. HvyAlcoholConsump corresponds to whether and individual consumes a lot of alcohol. "Heavy" consumption is referred to as greater than 14 drink a week for males and greater than 7 drinks a week for women. GenHlth is a variable includes 5 levels, used to categorized how an individual viewed their general health at the time of the survey. MentHlh and PhysHlth correspond to the number of days in the last 30 days the individual felt that their mental health or physical health were poor. DiffWalk is a yes/no response indicting whether the individual has difficulty walking or climbing stairs. Age indicates the age grouping of the individual. The 13 groupings start at age 18-24, with subsequent levels in increments of 5 years and the final level corresponding to 80+ years. Finally, income corresponds to 8 levels generally in 5K increments, ranging from less than 10K, to greater than 75k. The details of selecting the 13 variables described here are discussed below for the EDA.
 
 # EDA Analysis
 
@@ -18,12 +20,12 @@ The first step is to read in the data. Since the data is a csv file, this can be
 ```{r}
 #| warning: false
 #| message: false
-#| #load libraries
+#load libraries
 library(tidyverse)
 library(psych)
-library(caret)
 # read in data set
-diabetes_data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+diabetes_data <- read_csv("diabetes_binary_health_indicators_BRFSS2015.csv",
+                          show_col_types = FALSE)
 diabetes_data
 
 ```
@@ -44,11 +46,9 @@ unique_values <- diabetes_data |>
   distinct()
 unique_values
 
-
-
 ```
 
-The next step is to summarize the variables. The simplest method for doing so is to use describe() from the psych package. Below is the summary for this data. Nothing appears out of the ordinary in the summary. As we would expect, most have a minimum of 0 and a maximum of 1. BMI, MentHlth and PhysHlth are the only variables that are truly numeric and this is reflected in the summary.
+The next step is to summarize the variables. The simplest method for doing so is to use describe() from the psych package. Below is the summary for this data. As we would expect, most variables have a minimum of 0 and a maximum of 1. BMI, MentHlth and PhysHlth are the only variables that are truly numeric and this is reflected in the summary. One thing that stands out is that the max value for BMI is 98, while the average is 28.28. While a BMI of 98 is theoretically possible, it would likely be rare. This should be examined further.
 
 ```{r}
 # summarize variables
@@ -56,44 +56,105 @@ describe(diabetes_data)
 
 ```
 
+To examine the BMI category, we can look at the unique values in the category. By doing so we can see the range of values present.
+
+```{r}
+unique_values <- unique(diabetes_data$BMI)
+unique_values
+
+```
+
+The distribution of these values can be visualized using a density plot, specifically zooming in on the higher range of values.
+
+```{r}
+#plot distribution of BMI between 50 and 100
+ggplot(diabetes_data, aes(x = BMI)) +
+  geom_density(fill = "darksalmon") + 
+  xlim(50, 100)
+
+```
+
+To see if these values might potentially be outliers, z-scores can be calculated. Generally, anything outside of +/- 3 is usually considered an outlier. This identifies 2963 potential outliers, in a BMI range of 49-98. This accounts for 1.17% of the data.
+
+```{r}
+#compute z-scores
+diabetes_z<- diabetes_data |>
+  mutate(z_score = (BMI - 28.38) / 6.61)
+#view and determine number of outliers
+diabetes_z_outlier <- diabetes_z |>
+  filter(abs(z_score) > 3)
+diabetes_z_outlier
+
+```
+
+Morbid obesity is considered to be anything over 40. According to the National Health and Nutrition Examination Survey (NHANES), 9.2% of adults were considered morbidly obese in 2018. To see how this diabetes indicators set aligns with this, counts can be calculated. By the counts in this data, 4.5% of individuals are morbidly obese. Since this is around half of the actual population incidence, the values classified as potential outliers will be retained to keep the data set as close to a population representation as possible.
+
+```{r}
+diabetes_data |>
+  filter(BMI >40) |>
+  count()
+
+```
+
 For the most of the data, since it is categorical, we can look at contingency tables to get an idea of their relationship with diabetes status. For this purpose, the data is going to be manipulated first. The categorical variables will be converted to factors and the levels renamed to better communicate what the levels actually mean. For this purpose, factor() will be use as it allows renaming of levels and specifying if a factor is ordered, as some of the categories are.
 
 ```{r}
 #convert categorical columns to factors
+#Remove BMI outliers
 diabetes <- diabetes_data |>
-  mutate(Diabetes_binary = as.factor(Diabetes_binary),
+  mutate(Diabetes_binary = factor(Diabetes_binary, levels = c(0, 1),
+                                  labels = c("Non_Diabetic", "Prediabetic_Diabetic")),
          Education = factor(Education, ordered = TRUE, levels = c(1:6),
-                            labels = c("No School", "Primary and Lower Secondary", "Some High School", 
-                                       "Graduated High School", "Some College", "Graduated College")),
+                            labels = c("No_School", "Primary_and_Middle",
+                                       "Some_High_School", 
+                                       "Graduated_High_School", "Some_College",
+                                       "Graduated_College")),
          Age = factor(Age,ordered = TRUE, levels = c(1:13), 
-                       labels = c("18-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", 
-                                  "60-64", "65-69", "70-74", "75-79", "80+")),
+                       labels = c("Age_18to24", "Age_25to29", 
+                                  "Age_30to34", "Age_35to39",
+                                  "Age_40to44", "Age_45to49", 
+                                  "Age_50to54", "Age_55to59", 
+                                  "Age_60to64", "Age_65to69", 
+                                  "Age_70to74", "Age_75to79", 
+                                  "Age_80_or_above")),
          Income = factor(Income, ordered = TRUE, levels = c(1:8),
-                         labels = c("less than 10K", "10K to < 15K","15K to < 20K",
-                                    "20K to < 25K", "25K to < 35K","35K to < 50K", 
-                                    "50K to < 75K","75k or more")),
+                         labels = c("Less_than_10K", 
+                                    "From_10K_to_under_15K",
+                                    "From_15K_to_under_20K",
+                                    "From_20K_to_under_25K", 
+                                    "From_25K_to_under_35K",
+                                    "From_35K_to_under_50K", 
+                                    "From_50K_to_under_75K",
+                                    "From_75k_or_more")),
          Sex = factor(Sex, levels = c(0, 1), labels = c("Female", "Male")),
          DiffWalk = factor(DiffWalk, levels = c(0, 1), labels = c("No", "Yes")),
-         NoDocbcCost = factor(NoDocbcCost, levels = c(0, 1), labels = c("No", "Yes")),
-         AnyHealthcare = factor(AnyHealthcare, levels = c(0, 1), labels = c("No", "Yes")),
-         HvyAlcoholConsump = factor(HvyAlcoholConsump, levels = c(0, 1), labels = c("No", "Yes")),
-         PhysActivity = factor(PhysActivity, levels = c(0, 1), labels = c("No", "Yes")),
-         HeartDiseaseorAttack = factor(HeartDiseaseorAttack, levels = c(0, 1), labels = c("No", "Yes")),
+         NoDocbcCost = factor(NoDocbcCost, levels = c(0, 1), labels = 
+                                c("No", "Yes")),
+         AnyHealthcare = factor(AnyHealthcare, levels = c(0, 1), 
+                                labels = c("No", "Yes")),
+         HvyAlcoholConsump = factor(HvyAlcoholConsump, levels = c(0, 1), 
+                                    labels = c("No", "Yes")),
+         PhysActivity = factor(PhysActivity, levels = c(0, 1), 
+                               labels = c("No", "Yes")),
+         HeartDiseaseorAttack = factor(HeartDiseaseorAttack, 
+                                       levels = c(0, 1), labels = c("No", "Yes")),
          Stroke = factor(Stroke, levels = c(0, 1), labels = c("No", "Yes")),
          Smoker = factor(Smoker, levels = c(0, 1), labels = c("No", "Yes")),
          CholCheck = factor(CholCheck, levels = c(0, 1), labels = c("No", "Yes")),
          HighBP = factor(HighBP, levels = c(0, 1), labels = c("No", "Yes")),
          HighChol = factor(HighChol, levels = c(0, 1), labels = c("No", "Yes")),
-         Fruits = factor(Fruits, levels = c(0, 1), labels = c("None", ">= 1/day")),
-         Veggies = factor(Veggies, levels = c(0, 1), labels = c("None", ">= 1/day")),
-         GenHlth = factor(GenHlth, levels = c(1:5), labels = c("Excellent", "Very Good", "Good", "Fair",
-                                                               "Poor"))
-         )
+         Fruits = factor(Fruits, levels = c(0, 1), labels = 
+                           c("None", "One_or_more_per_day")),
+         Veggies = factor(Veggies, levels = c(0, 1), 
+                          labels = c("None", "One_or_more_per_day")),
+         GenHlth = factor(GenHlth, levels = c(1:5), 
+                          labels = c("Excellent", "Very_Good", "Good", 
+                                     "Fair", "Poor")))
 diabetes
 
 ```
 
-Now that the data is properly formatted, contingency tables can be generated. The distribition of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process.
+Now that the data is properly formatted, contingency tables can be generated. The distribuition of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process.
 
 ```{r}
 #Contingency table for sex
@@ -102,6 +163,7 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
+
 ```
 
 We can also use bar charts to visualize the proportions of category levels relative to the diabetes variable. This visualization makes it easier to see the similarities or differences in proportions.
@@ -109,8 +171,10 @@ We can also use bar charts to visualize the proportions of category levels relat
 ```{r}
 ggplot(diabetes, aes(x = Sex, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without diabetes by Gender") +
-  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", title = "Proportion of Individuals with and 
+       without Diabetes by Gender") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
 
 ```
 
@@ -125,11 +189,15 @@ diabetes |>
 
 ```
 
+The bar chart for better visualization of Income is shown below.
+
 ```{r}
 ggplot(diabetes, aes(x = Income, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without diabetes by income level") +
-  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic")) +
+  labs(y = "Count", title = "Proportion of Individuals with and 
+       without Diabetes by Income Level") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
@@ -144,7 +212,6 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 Looking at the bar chart, the patterns for income and education look nearly identical.
@@ -152,10 +219,11 @@ Looking at the bar chart, the patterns for income and education look nearly iden
 ```{r}
 ggplot(diabetes, aes(x = Education, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without diabetes by education level") +
-  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic")) +
+  labs(y = "Count", title = "Proportion of Individuals with and 
+       without Diabetes by Education Level") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
 
 ```
 
@@ -169,12 +237,15 @@ cont_table <- diabetes |>
   pivot_wider(names_from = Income, values_from = count)
 cont_table
 
+
 ```
 
 We can look into these variables further by testing independence with a Chi-Sqare test. The analysis, shown below, indicates that these variables are correlated, as indicated by the low p-value. Since education has a low frequency of numbers in the "No School" category, dropping this variable from the model fitting is a practical choice.
 
 ```{r}
+#make a matrix and remove the Education column names
 cont_matrix <- as.matrix(cont_table[, -1])
+#Chi-Square test
 chisquare_test <- chisq.test(cont_matrix)
 chisquare_test
 
@@ -189,14 +260,17 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
+
+A visualization of the Age variable is presented below.
 
 ```{r}
 ggplot(diabetes, aes(x = Age, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without diabetes by Age") +
-  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic")) +
+  labs(y = "Count", title = "Proportion of individuals with 
+       and without diabetes by Age") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
@@ -211,6 +285,7 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
+
 ```
 
 Similarly, vegetable consumption does not appear to be an important variable for diabetes classification, with proportions of 0.18 and 0.13 for the diabetes category.
@@ -221,6 +296,7 @@ diabetes |>
   group_by(Veggies, Diabetes_binary) |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
+
 
 ```
 
@@ -233,14 +309,15 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 ```{r}
 ggplot(diabetes, aes(x = PhysActivity, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without diabetes by Physical Activity") +
-  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", title = "Proportion of individuals with and 
+       without diabetes by Physical Activity") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
 
 ```
 
@@ -253,6 +330,7 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
+
 ```
 
 ```{r}
@@ -260,7 +338,8 @@ ggplot(diabetes, aes(x = HvyAlcoholConsump, fill = Diabetes_binary)) +
   geom_bar(position = "fill") +
   labs(y = "Count", title = "Proportion of individuals with and without 
        diabetes by Alcohol Consumption Activity") +
-  scale_fill_discrete(name="Status", labels = c("Not Diabetic", "Diabetic/Prediabetic"))
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
 
 ```
 
@@ -273,7 +352,6 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 The AnyHealthcare variable is similar in proportion for both levels for those with diabetes, with proportions of 0.115 and 0.140. This variable will be excluded from model fitting.
@@ -284,7 +362,6 @@ diabetes |>
   group_by(AnyHealthcare, Diabetes_binary) |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
-
 
 ```
 
@@ -297,7 +374,6 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 Below is a visualization of the HeartDiseaseorAttack variable.
@@ -306,9 +382,10 @@ Below is a visualization of the HeartDiseaseorAttack variable.
 ggplot(diabetes, aes(x = HeartDiseaseorAttack, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
   labs(y = "Count", title = "Proportion of individuals with and without 
-       diabetes by Heart Disease or Hart Attack Status") +
+       diabetes by Heart Disease or Heart Attack Status") +
   scale_fill_discrete(name="Status", labels = 
                         c("Not Diabetic", "Diabetic/Prediabetic"))
+
 
 ```
 
@@ -321,7 +398,6 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 The Smoker variable does not appear to be particularly important for diabetes prediction an the proportions are similar. This seems contradictory since it is known that smokers are more likely to have diabetes since nicotine makes cells less responsive to insulin. But the question for respondents was "Have you smoked at least 100 cigarettes (5 packs) in your entire life?" which communicates nothing about when in their life that was and if they are currently smoking. Consequently, this variable will be left out of the model fitting.
@@ -333,7 +409,6 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 ```{r}
@@ -343,6 +418,7 @@ ggplot(diabetes, aes(x = Smoker, fill = Diabetes_binary)) +
        Diabetes by Smoking Status") +
   scale_fill_discrete(name="Status", labels = 
                         c("Not Diabetic", "Diabetic/Prediabetic"))
+
 
 ```
 
@@ -355,7 +431,6 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
 The contingency table for DiffWalk is below. For individuals with diabetes, the proportion of those who responded yes to difficulty walking or climbing stairs is 0.307 compared to that of those who responded no, 0.105. This variable may be important for predicting diabetes and will be included in model fitting.
@@ -367,12 +442,17 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
-
 ```
 
+Visualization of DiffWalk relative to diabetes status is presented below.
+
 ```{r}
-8742/(8742+136109)
-26604/(26604+82225)
+ggplot(diabetes, aes(x = DiffWalk, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of Individuals with and without 
+       Diabetes by Difficulting Walking/Climbing Stairs") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
 
 ```
 
@@ -385,6 +465,17 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
+```
+
+A bar chart visualizing HighChol is below.
+
+```{r}
+ggplot(diabetes, aes(x = HighChol, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of Individuals with and without 
+       Diabetes by Cholesterol Status") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
 
 ```
 
@@ -397,7 +488,18 @@ diabetes |>
   summarize(count = n(), .groups = "drop") |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
+```
 
+Visualization for HighBP is below and similar to that of HighChol.
+
+```{r}
+
+ggplot(diabetes, aes(x = HighBP, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of Individuals with and without 
+       Diabetes by Blood Pressure Status") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
 ```
 
 We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
@@ -406,6 +508,7 @@ We can look at the distribution of BMI in this data by examining a histogram. Th
 ggplot(data = diabetes, aes(BMI)) +
   geom_histogram(binwidth = 2, fill = "darksalmon", color = "black") +
   labs(y = "Count")
+
 
 ```
 
@@ -421,7 +524,27 @@ cor.test(diabetes_corr$BMI, diabetes_corr$Diabetes_binary)
 
 ```
 
-MentHlth
+The MentHlth variable measures the number of days out of the last 30 the individual felt that their physical health was not good. The means look different but the standard deviations are high.
+
+```{r}
+diabetes |>
+  group_by(Diabetes_binary) |>
+  summarize(across(MentHlth, .fns = list("mean" = mean,
+                                                 "sd" = sd),
+                                                 .names = "{.fn}_{.col}"))
+  
+
+```
+
+The significance of the difference in means can be determined using a t-test. The t-test indicates that the differences are significant, so this variable will be included in the modeling.
+
+```{r}
+t_test_MentHlth <- t.test(MentHlth ~ Diabetes_binary, data = diabetes)
+t_test_MentHlth
+
+```
+
+Below is the distribution of the MentHlth variable. it is not normal, but given the number of observation, the t-test holds due to the Central Limit Theorem.
 
 ```{r}
 ggplot(data = diabetes, aes(MentHlth)) +
@@ -430,7 +553,26 @@ ggplot(data = diabetes, aes(MentHlth)) +
 
 ```
 
-PhysHlth
+The PhysHlth variable measures the number of days out of the last 30 the individual felt that their physical health was not good. The means look different but the standard deviations are high.
+
+```{r}
+diabetes |>
+  group_by(Diabetes_binary) |>
+  summarize(across(PhysHlth, .fns = list("mean" = mean,
+                                                 "sd" = sd),
+                                                 .names = "{.fn}_{.col}"))
+
+```
+
+The significance of the difference in means for PhysHlth can be determined using a t-test. The t-test indicates that the differences are significant, so this variable will be included in the modeling.
+
+```{r}
+t_test_PhysHlth <- t.test(PhysHlth ~ Diabetes_binary, data = diabetes)
+t_test_PhysHlth
+
+```
+
+Below is the distribution of the PhysHlth variable. it is not normal, but given the number of observation, the t-test holds.
 
 ```{r}
 ggplot(data = diabetes, aes(PhysHlth)) +
@@ -439,4 +581,40 @@ ggplot(data = diabetes, aes(PhysHlth)) +
 
 ```
 
-[Model Fitting](file:///C:/Users/kimel/Documents/FinalProjectMB/docs/Modeling.html)
+The contingency table of the GenHlth variable shows that a significantly higher proportion of non-diabetics viewed their health as being "excellent" compared to diabetics. For each subsequent level of progressively worsening opinion of general health, the proportion of diabetics increased while that of non-diabetics decreased. This variable may be important for prediction and will be included in the model fitting.
+
+```{r}
+#Contingency table for GenHlth
+diabetes |>
+  group_by(GenHlth, Diabetes_binary) |>
+  summarize(count = n(), .groups = "drop") |>
+  pivot_wider(names_from = Diabetes_binary, values_from = count)
+
+```
+
+A visualization of the general health variable is shown below.
+
+```{r}
+ggplot(diabetes, aes(x = GenHlth, fill = Diabetes_binary)) + 
+  geom_bar(position = "fill") +
+  labs(y = "Count", title = "Proportion of individuals with and without 
+       Diabetes by General Health Status") +
+  scale_fill_discrete(name="Status", labels = 
+                        c("Not Diabetic", "Diabetic/Prediabetic"))
+
+```
+
+### Data export for Modeling
+
+A csv file is being created to import into the Modeling document. Unfortunately the categorical variables will need to be converted to factors again, but the labels will not need to be created again.
+
+```{r}
+write_csv(diabetes, "diabetes.csv")
+
+```
+
+# Conclusion
+
+Based on the exploratory data analysis, The variables have been reduced down to 13 from 21 and will be subsequently used in the model fitting. The model fitting can be accessed in the link below.
+
+[Model Fitting](docs/Modeling.html)

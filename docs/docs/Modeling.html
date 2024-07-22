@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Melanie Beebe">
+
+<title>Modeling of the Diabetes Health Indicators Set</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-search-results"></div>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Modeling of the Diabetes Health Indicators Set</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Melanie Beebe </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>The goal of this modeling document is to explain the process of model fitting for prediction of diabetes using the Diabetes Health Indicators Dataset from 2015. This data set is a subset of data taken from the Behavioral Risk Factor Surveillance System (BRFSS) run by the Centers for Disease Control and Prevention (CDC). This data is obtained through a health-related telephone survey. The Diabetes Health Indicators Dataset contains 21 variables and 253,680 observations.</p>
+<p>For modeling, 3 candidate models will be fit using logistic regression, classification tree and random forest. This will be done using the caret package. Various options are available for measuring performance of the model. Accuracy is the most common measure and the default in caret for classification models, but log loss will be used here for all models.</p>
+<p>Log loss takes into account the uncertainty of predictions by penalizing models more heavily for incorrect predictions. This means that the further the prediction probability is from the actual value, the higher the log loss is. So a model with a lower log loss is more desireable. Log loss is preferred for this data because it is imbalanced, with 86% of the observations being non-diabeticss. If accuracy is used, the models predictions might be more biased towards the more frequent class and as a result could have high prediction accuracy for the more frequent class, but fail to identify many minority class cases. By penalizing models for incorrect predictions, log loss allows a more balanced view of performance for the classes.</p>
+</section>
+<section id="model-fitting" class="level1">
+<h1>Model Fitting</h1>
+<p>To fit the models, the data needs to be imported using read_csv from tidyverse. This csv file is data modified during the exploratory data analysis step where the category levels were assigned more meaningful labels. Since data classes are not preserved, the categories need to also be converted to factors again.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#load libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#read in data</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>diabetes1 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"diabetes.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#convert to factors</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>diabetes1  <span class="ot">&lt;-</span> diabetes1 <span class="sc">|&gt;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> <span class="fu">as.factor</span>(Diabetes_binary),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">Age =</span> <span class="fu">factor</span>(Age,<span class="at">ordered =</span> <span class="cn">TRUE</span>, <span class="at">levels =</span> </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">c</span>(<span class="st">"Age_18to24"</span>, <span class="st">"Age_25to29"</span>, </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Age_30to34"</span>, <span class="st">"Age_35to39"</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Age_40to44"</span>, <span class="st">"Age_45to49"</span>, </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Age_50to54"</span>, <span class="st">"Age_55to59"</span>, </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Age_60to64"</span>, <span class="st">"Age_65to69"</span>, </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Age_70to74"</span>, <span class="st">"Age_75to79"</span>, </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Age_80_or_above"</span>)),</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">Education =</span> <span class="fu">factor</span>(Education, <span class="at">ordered =</span> <span class="cn">TRUE</span>, <span class="at">levels =</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">c</span>(<span class="st">"No_School"</span>, <span class="st">"Primary_and_Middle"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Some_High_School"</span>, <span class="st">"Graduated_High_School"</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>                                <span class="st">"Some_College"</span>, <span class="st">"Graduated_College"</span>)),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">Sex =</span> <span class="fu">as.factor</span>(Sex),</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>         <span class="at">Income =</span> <span class="fu">factor</span>(Income, <span class="at">ordered =</span> <span class="cn">TRUE</span>, <span class="at">levels =</span> </span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                           <span class="fu">c</span>(<span class="st">"Less_than_10K"</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_10K_to_under_15K"</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_15K_to_under_20K"</span>,</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_20K_to_under_25K"</span>, </span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_25K_to_under_35K"</span>,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_35K_to_under_50K"</span>, </span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_50K_to_under_75K"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>                             <span class="st">"From_75k_or_more"</span>)),</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>         <span class="at">DiffWalk =</span> <span class="fu">as.factor</span>(DiffWalk),</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>         <span class="at">NoDocbcCost =</span> <span class="fu">as.factor</span>(NoDocbcCost),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">AnyHealthcare =</span> <span class="fu">as.factor</span>(AnyHealthcare),</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">HvyAlcoholConsump =</span> <span class="fu">as.factor</span>(HvyAlcoholConsump),</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">Smoker =</span> <span class="fu">as.factor</span>(Smoker),</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>         <span class="at">CholCheck =</span> <span class="fu">as.factor</span>(CholCheck),</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>         <span class="at">PhysActivity =</span> <span class="fu">as.factor</span>(PhysActivity),</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>         <span class="at">HeartDiseaseorAttack =</span> <span class="fu">as.factor</span>(HeartDiseaseorAttack),</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>         <span class="at">Stroke =</span> <span class="fu">as.factor</span>(Stroke),</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>         <span class="at">HighBP =</span> <span class="fu">as.factor</span>(HighBP),</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>         <span class="at">HighChol =</span> <span class="fu">as.factor</span>(HighChol),</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>         <span class="at">Fruits =</span> <span class="fu">as.factor</span>(Fruits),</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>         <span class="at">Veggies =</span> <span class="fu">as.factor</span>(Veggies),</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>         <span class="at">GenHlth =</span> <span class="fu">factor</span>(GenHlth, <span class="at">ordered =</span> <span class="cn">TRUE</span>, <span class="at">levels =</span> </span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">c</span>(<span class="st">"Excellent"</span>, <span class="st">"Very_Good"</span>, <span class="st">"Good"</span>, </span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Fair"</span>, <span class="st">"Poor"</span>)))</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>diabetes1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 253,680 × 22
+   Diabetes_binary      HighBP HighChol CholCheck   BMI Smoker Stroke
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;fct&gt;     &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+ 1 Non_Diabetic         Yes    Yes      Yes          40 Yes    No    
+ 2 Non_Diabetic         No     No       No           25 Yes    No    
+ 3 Non_Diabetic         Yes    Yes      Yes          28 No     No    
+ 4 Non_Diabetic         Yes    No       Yes          27 No     No    
+ 5 Non_Diabetic         Yes    Yes      Yes          24 No     No    
+ 6 Non_Diabetic         Yes    Yes      Yes          25 Yes    No    
+ 7 Non_Diabetic         Yes    No       Yes          30 Yes    No    
+ 8 Non_Diabetic         Yes    Yes      Yes          25 Yes    No    
+ 9 Prediabetic_Diabetic Yes    Yes      Yes          30 Yes    No    
+10 Non_Diabetic         No     No       Yes          24 No     No    
+# ℹ 253,670 more rows
+# ℹ 15 more variables: HeartDiseaseorAttack &lt;fct&gt;, PhysActivity &lt;fct&gt;,
+#   Fruits &lt;fct&gt;, Veggies &lt;fct&gt;, HvyAlcoholConsump &lt;fct&gt;, AnyHealthcare &lt;fct&gt;,
+#   NoDocbcCost &lt;fct&gt;, GenHlth &lt;ord&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;,
+#   DiffWalk &lt;fct&gt;, Sex &lt;fct&gt;, Age &lt;ord&gt;, Education &lt;ord&gt;, Income &lt;ord&gt;</code></pre>
+</div>
+</div>
+<p>The models that will be tested are the following:</p>
+<ol type="1">
+<li>Full model with all 21 variables</li>
+<li>Model with 13 variables as identified in EDA</li>
+<li>Model with Age, BMI, HighBP, HighChol, Income , HeartDiseaseorAttack and GenHlth variables.</li>
+</ol>
+<p>The data will all 21 variables will be used as a reference point since there are not that many variables. The second model was determined using EDA. The third model contains 4 variables known scientifically to be associated with diabetes risk, Age, BMI, HighBP and HighChol. In addition the Income, HeartDiseaseorAttack and GenHlth variables will be included.</p>
+<p>The next step is to create new data sets for each of the models and split the data into testing and training sets.</p>
+<section id="model-1" class="level3">
+<h3 class="anchored" data-anchor-id="model-1">Model 1</h3>
+<p>Data will be split 70/30 for training and testing. Model 1 data includes all variables, so the imported data above will be used. The createPartition() function from caret is used as it tries to maintain the class distribution (for the Diabetes_binary variable) for both sets.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#partition data</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>trainIndex <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(diabetes1<span class="sc">$</span>Diabetes_binary, </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">p =</span> <span class="fl">0.7</span>, </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">list =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#create training set</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>diabetesTrain1 <span class="ot">&lt;-</span> diabetes1[trainIndex, ]</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#create test set</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>diabetesTest1 <span class="ot">&lt;-</span> diabetes1[<span class="sc">-</span>trainIndex, ]</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>diabetesTrain1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 177,577 × 22
+   Diabetes_binary      HighBP HighChol CholCheck   BMI Smoker Stroke
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;fct&gt;     &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+ 1 Non_Diabetic         Yes    Yes      Yes          40 Yes    No    
+ 2 Non_Diabetic         No     No       No           25 Yes    No    
+ 3 Non_Diabetic         Yes    No       Yes          27 No     No    
+ 4 Non_Diabetic         Yes    Yes      Yes          24 No     No    
+ 5 Non_Diabetic         Yes    Yes      Yes          25 Yes    No    
+ 6 Non_Diabetic         Yes    No       Yes          30 Yes    No    
+ 7 Non_Diabetic         Yes    Yes      Yes          25 Yes    No    
+ 8 Prediabetic_Diabetic Yes    Yes      Yes          30 Yes    No    
+ 9 Prediabetic_Diabetic No     No       Yes          25 Yes    No    
+10 Non_Diabetic         Yes    Yes      Yes          34 Yes    No    
+# ℹ 177,567 more rows
+# ℹ 15 more variables: HeartDiseaseorAttack &lt;fct&gt;, PhysActivity &lt;fct&gt;,
+#   Fruits &lt;fct&gt;, Veggies &lt;fct&gt;, HvyAlcoholConsump &lt;fct&gt;, AnyHealthcare &lt;fct&gt;,
+#   NoDocbcCost &lt;fct&gt;, GenHlth &lt;ord&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;,
+#   DiffWalk &lt;fct&gt;, Sex &lt;fct&gt;, Age &lt;ord&gt;, Education &lt;ord&gt;, Income &lt;ord&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>diabetesTest1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 76,103 × 22
+   Diabetes_binary      HighBP HighChol CholCheck   BMI Smoker Stroke
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;fct&gt;     &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt; 
+ 1 Non_Diabetic         Yes    Yes      Yes          28 No     No    
+ 2 Non_Diabetic         No     No       Yes          24 No     No    
+ 3 Non_Diabetic         No     No       Yes          26 Yes    No    
+ 4 Non_Diabetic         No     Yes      Yes          33 Yes    Yes   
+ 5 Non_Diabetic         Yes    No       Yes          33 No     No    
+ 6 Non_Diabetic         No     No       No           23 No     No    
+ 7 Non_Diabetic         Yes    Yes      Yes          28 Yes    No    
+ 8 Prediabetic_Diabetic Yes    Yes      Yes          37 Yes    Yes   
+ 9 Prediabetic_Diabetic Yes    Yes      Yes          28 Yes    No    
+10 Non_Diabetic         Yes    No       Yes          26 No     No    
+# ℹ 76,093 more rows
+# ℹ 15 more variables: HeartDiseaseorAttack &lt;fct&gt;, PhysActivity &lt;fct&gt;,
+#   Fruits &lt;fct&gt;, Veggies &lt;fct&gt;, HvyAlcoholConsump &lt;fct&gt;, AnyHealthcare &lt;fct&gt;,
+#   NoDocbcCost &lt;fct&gt;, GenHlth &lt;ord&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;,
+#   DiffWalk &lt;fct&gt;, Sex &lt;fct&gt;, Age &lt;ord&gt;, Education &lt;ord&gt;, Income &lt;ord&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="model-2" class="level3">
+<h3 class="anchored" data-anchor-id="model-2">Model 2</h3>
+<p>For model 2, we can use the training and test sets above with the appropriate variable removed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>diabetesTrain2 <span class="ot">&lt;-</span> diabetesTrain1 <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>CholCheck,<span class="sc">-</span>Smoker, <span class="sc">-</span>Fruits, <span class="sc">-</span>Veggies, <span class="sc">-</span>AnyHealthcare, <span class="sc">-</span>NoDocbcCost,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>         <span class="sc">-</span>Sex, <span class="sc">-</span>Education)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>diabetesTest2 <span class="ot">&lt;-</span> diabetesTest1 <span class="sc">|&gt;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>CholCheck,<span class="sc">-</span>Smoker, <span class="sc">-</span>Fruits, <span class="sc">-</span>Veggies, <span class="sc">-</span>AnyHealthcare, <span class="sc">-</span>NoDocbcCost,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>         <span class="sc">-</span>Sex, <span class="sc">-</span>Education)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>diabetesTrain2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 177,577 × 14
+   Diabetes_binary      HighBP HighChol   BMI Stroke HeartDiseaseorAttack
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;               
+ 1 Non_Diabetic         Yes    Yes         40 No     No                  
+ 2 Non_Diabetic         No     No          25 No     No                  
+ 3 Non_Diabetic         Yes    No          27 No     No                  
+ 4 Non_Diabetic         Yes    Yes         24 No     No                  
+ 5 Non_Diabetic         Yes    Yes         25 No     No                  
+ 6 Non_Diabetic         Yes    No          30 No     No                  
+ 7 Non_Diabetic         Yes    Yes         25 No     No                  
+ 8 Prediabetic_Diabetic Yes    Yes         30 No     Yes                 
+ 9 Prediabetic_Diabetic No     No          25 No     No                  
+10 Non_Diabetic         Yes    Yes         34 No     No                  
+# ℹ 177,567 more rows
+# ℹ 8 more variables: PhysActivity &lt;fct&gt;, HvyAlcoholConsump &lt;fct&gt;,
+#   GenHlth &lt;ord&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;, DiffWalk &lt;fct&gt;, Age &lt;ord&gt;,
+#   Income &lt;ord&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>diabetesTest2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 76,103 × 14
+   Diabetes_binary      HighBP HighChol   BMI Stroke HeartDiseaseorAttack
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;dbl&gt; &lt;fct&gt;  &lt;fct&gt;               
+ 1 Non_Diabetic         Yes    Yes         28 No     No                  
+ 2 Non_Diabetic         No     No          24 No     No                  
+ 3 Non_Diabetic         No     No          26 No     No                  
+ 4 Non_Diabetic         No     Yes         33 Yes    No                  
+ 5 Non_Diabetic         Yes    No          33 No     No                  
+ 6 Non_Diabetic         No     No          23 No     No                  
+ 7 Non_Diabetic         Yes    Yes         28 No     No                  
+ 8 Prediabetic_Diabetic Yes    Yes         37 Yes    Yes                 
+ 9 Prediabetic_Diabetic Yes    Yes         28 No     Yes                 
+10 Non_Diabetic         Yes    No          26 No     No                  
+# ℹ 76,093 more rows
+# ℹ 8 more variables: PhysActivity &lt;fct&gt;, HvyAlcoholConsump &lt;fct&gt;,
+#   GenHlth &lt;ord&gt;, MentHlth &lt;dbl&gt;, PhysHlth &lt;dbl&gt;, DiffWalk &lt;fct&gt;, Age &lt;ord&gt;,
+#   Income &lt;ord&gt;</code></pre>
+</div>
+</div>
+</section>
+<section id="model-3" class="level3">
+<h3 class="anchored" data-anchor-id="model-3">Model 3</h3>
+<p>Similar to what was done for model 2, the training and test sets for model 3 can be obtained by removing columns from model 2 training and test sets.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>diabetesTrain3 <span class="ot">&lt;-</span> diabetesTrain2 <span class="sc">|&gt;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>Stroke,<span class="sc">-</span>MentHlth, <span class="sc">-</span>PhysHlth, <span class="sc">-</span>HvyAlcoholConsump, <span class="sc">-</span>DiffWalk)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>diabetesTest3 <span class="ot">&lt;-</span> diabetesTest2 <span class="sc">|&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>Stroke,<span class="sc">-</span>MentHlth, <span class="sc">-</span>PhysHlth, <span class="sc">-</span>HvyAlcoholConsump, <span class="sc">-</span>DiffWalk)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>diabetesTrain3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 177,577 × 9
+   Diabetes_binary      HighBP HighChol   BMI HeartDiseaseorAttack PhysActivity
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;dbl&gt; &lt;fct&gt;                &lt;fct&gt;       
+ 1 Non_Diabetic         Yes    Yes         40 No                   No          
+ 2 Non_Diabetic         No     No          25 No                   Yes         
+ 3 Non_Diabetic         Yes    No          27 No                   Yes         
+ 4 Non_Diabetic         Yes    Yes         24 No                   Yes         
+ 5 Non_Diabetic         Yes    Yes         25 No                   Yes         
+ 6 Non_Diabetic         Yes    No          30 No                   No          
+ 7 Non_Diabetic         Yes    Yes         25 No                   Yes         
+ 8 Prediabetic_Diabetic Yes    Yes         30 Yes                  No          
+ 9 Prediabetic_Diabetic No     No          25 No                   Yes         
+10 Non_Diabetic         Yes    Yes         34 No                   No          
+# ℹ 177,567 more rows
+# ℹ 3 more variables: GenHlth &lt;ord&gt;, Age &lt;ord&gt;, Income &lt;ord&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>diabetesTest3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 76,103 × 9
+   Diabetes_binary      HighBP HighChol   BMI HeartDiseaseorAttack PhysActivity
+   &lt;fct&gt;                &lt;fct&gt;  &lt;fct&gt;    &lt;dbl&gt; &lt;fct&gt;                &lt;fct&gt;       
+ 1 Non_Diabetic         Yes    Yes         28 No                   No          
+ 2 Non_Diabetic         No     No          24 No                   No          
+ 3 Non_Diabetic         No     No          26 No                   No          
+ 4 Non_Diabetic         No     Yes         33 No                   Yes         
+ 5 Non_Diabetic         Yes    No          33 No                   Yes         
+ 6 Non_Diabetic         No     No          23 No                   No          
+ 7 Non_Diabetic         Yes    Yes         28 No                   No          
+ 8 Prediabetic_Diabetic Yes    Yes         37 Yes                  No          
+ 9 Prediabetic_Diabetic Yes    Yes         28 Yes                  No          
+10 Non_Diabetic         Yes    No          26 No                   Yes         
+# ℹ 76,093 more rows
+# ℹ 3 more variables: GenHlth &lt;ord&gt;, Age &lt;ord&gt;, Income &lt;ord&gt;</code></pre>
+</div>
+</div>
+<p>Now some models can be fit to these data sets.</p>
+</section>
+<section id="logistic-regression" class="level2">
+<h2 class="anchored" data-anchor-id="logistic-regression">Logistic Regression</h2>
+<p>Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification of a new observation. The event is binary, so typcially refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.</p>
+<p>For fitting logistic regression in caret, we need to specify the method as glm, although there are other options. Since our response is binary, the family is “binomial”. Since we want to use log loss, we need to specify this as the metric in train as well as in the trainControl for summaryFunction. When using log loss, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation for the method using 5 folds.</p>
+<p>The fit for Model 1 with all 21 variables is shown below. The log loss for the fit is 0.317. This would not be considered high but how good it is would require some kind of baseline.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>logRegFit_M1 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> diabetesTrain1,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">"glm"</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">"binomial"</span>,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">summaryFunction =</span> mnLogLoss))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>logRegFit_M1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized Linear Model 
+
+177577 samples
+    21 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142062, 142062, 142061, 142062, 142061 
+Resampling results:
+
+  logLoss  
+  0.3168771</code></pre>
+</div>
+</div>
+<p>The summary for Model 1 fit is below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logRegFit_M1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+NULL
+
+Coefficients:
+                             Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)                -5.8075675  0.1061653 -54.703  &lt; 2e-16 ***
+HighBPYes                   0.7236103  0.0176443  41.011  &lt; 2e-16 ***
+HighCholYes                 0.5292785  0.0163079  32.455  &lt; 2e-16 ***
+CholCheckYes                1.2553484  0.0827403  15.172  &lt; 2e-16 ***
+BMI                         0.0576228  0.0010903  52.850  &lt; 2e-16 ***
+SmokerYes                  -0.0363594  0.0159091  -2.285 0.022287 *  
+StrokeYes                   0.1428743  0.0298347   4.789 1.68e-06 ***
+HeartDiseaseorAttackYes     0.2494557  0.0212568  11.735  &lt; 2e-16 ***
+PhysActivityYes            -0.0570992  0.0172378  -3.312 0.000925 ***
+FruitsOne_or_more_per_day  -0.0316766  0.0164129  -1.930 0.053609 .  
+VeggiesOne_or_more_per_day -0.0403626  0.0190000  -2.124 0.033641 *  
+HvyAlcoholConsumpYes       -0.7936119  0.0466087 -17.027  &lt; 2e-16 ***
+AnyHealthcareYes            0.0597127  0.0400401   1.491 0.135877    
+NoDocbcCostYes             -0.0039970  0.0275594  -0.145 0.884685    
+GenHlth.L                   1.6484010  0.0349706  47.137  &lt; 2e-16 ***
+GenHlth.Q                  -0.3692101  0.0264086 -13.981  &lt; 2e-16 ***
+GenHlth.C                  -0.0651716  0.0199671  -3.264 0.001099 ** 
+`GenHlth^4`                 0.0144172  0.0148045   0.974 0.330139    
+MentHlth                   -0.0026657  0.0010153  -2.625 0.008653 ** 
+PhysHlth                   -0.0034423  0.0009638  -3.572 0.000355 ***
+DiffWalkYes                 0.1361700  0.0202681   6.718 1.84e-11 ***
+SexMale                     0.2724640  0.0161617  16.859  &lt; 2e-16 ***
+Age.L                       2.3052029  0.0809772  28.467  &lt; 2e-16 ***
+Age.Q                      -0.7731608  0.0761771 -10.150  &lt; 2e-16 ***
+Age.C                      -0.2258799  0.0707002  -3.195 0.001399 ** 
+`Age^4`                    -0.0505754  0.0674966  -0.749 0.453675    
+`Age^5`                    -0.1626783  0.0648937  -2.507 0.012181 *  
+`Age^6`                     0.0839011  0.0608445   1.379 0.167912    
+`Age^7`                     0.0010880  0.0557622   0.020 0.984433    
+`Age^8`                     0.0143805  0.0498648   0.288 0.773049    
+`Age^9`                    -0.0064350  0.0436131  -0.148 0.882701    
+`Age^10`                   -0.0904905  0.0379455  -2.385 0.017091 *  
+`Age^11`                    0.0624109  0.0333952   1.869 0.061642 .  
+`Age^12`                    0.0261874  0.0284193   0.921 0.356807    
+Education.L                -0.1459432  0.1434671  -1.017 0.309030    
+Education.Q                 0.0029214  0.1305425   0.022 0.982146    
+Education.C                 0.0126293  0.0925402   0.136 0.891447    
+`Education^4`              -0.0534792  0.0540876  -0.989 0.322785    
+`Education^5`              -0.0164560  0.0305847  -0.538 0.590545    
+Income.L                   -0.3919325  0.0289449 -13.541  &lt; 2e-16 ***
+Income.Q                   -0.0754943  0.0248551  -3.037 0.002386 ** 
+Income.C                   -0.0036273  0.0237681  -0.153 0.878705    
+`Income^4`                 -0.0240004  0.0237376  -1.011 0.311982    
+`Income^5`                 -0.0097538  0.0233498  -0.418 0.676148    
+`Income^6`                 -0.0108508  0.0228148  -0.476 0.634357    
+`Income^7`                  0.0131927  0.0225212   0.586 0.558017    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 143396  on 177576  degrees of freedom
+Residual deviance: 112441  on 177531  degrees of freedom
+AIC: 112533
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+</div>
+<p>Model 2 is fit the same way. Even though variables were carefully selected using EDA, the log loss is slightly worse than that for Model 1, with a value of 0.319.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>logRegFit_M2 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., </span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> diabetesTrain2,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">"glm"</span>,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">"binomial"</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">summaryFunction =</span> mnLogLoss))</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>logRegFit_M2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized Linear Model 
+
+177577 samples
+    13 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142062, 142061, 142062, 142061, 142062 
+Resampling results:
+
+  logLoss  
+  0.3186817</code></pre>
+</div>
+</div>
+<p>The summary of Model 2 is below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logRegFit_M2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+NULL
+
+Coefficients:
+                          Estimate Std. Error  z value Pr(&gt;|z|)    
+(Intercept)             -4.5391110  0.0423776 -107.111  &lt; 2e-16 ***
+HighBPYes                0.7533312  0.0176006   42.801  &lt; 2e-16 ***
+HighCholYes              0.5384371  0.0162638   33.106  &lt; 2e-16 ***
+BMI                      0.0577817  0.0010819   53.410  &lt; 2e-16 ***
+StrokeYes                0.1479984  0.0297927    4.968 6.78e-07 ***
+HeartDiseaseorAttackYes  0.2973285  0.0210240   14.142  &lt; 2e-16 ***
+PhysActivityYes         -0.0544293  0.0169485   -3.211 0.001321 ** 
+HvyAlcoholConsumpYes    -0.7870973  0.0462350  -17.024  &lt; 2e-16 ***
+GenHlth.L                1.6873671  0.0347504   48.557  &lt; 2e-16 ***
+GenHlth.Q               -0.3614216  0.0263392  -13.722  &lt; 2e-16 ***
+GenHlth.C               -0.0650016  0.0199257   -3.262 0.001106 ** 
+`GenHlth^4`              0.0146550  0.0147723    0.992 0.321168    
+MentHlth                -0.0039172  0.0010056   -3.895 9.81e-05 ***
+PhysHlth                -0.0036978  0.0009611   -3.847 0.000119 ***
+DiffWalkYes              0.1143075  0.0201263    5.680 1.35e-08 ***
+Age.L                    2.2848968  0.0803946   28.421  &lt; 2e-16 ***
+Age.Q                   -0.7524727  0.0760543   -9.894  &lt; 2e-16 ***
+Age.C                   -0.2595695  0.0706335   -3.675 0.000238 ***
+`Age^4`                 -0.0329026  0.0673990   -0.488 0.625425    
+`Age^5`                 -0.1720643  0.0648336   -2.654 0.007956 ** 
+`Age^6`                  0.0837446  0.0607780    1.378 0.168241    
+`Age^7`                  0.0088728  0.0556861    0.159 0.873405    
+`Age^8`                  0.0157097  0.0497889    0.316 0.752363    
+`Age^9`                 -0.0111388  0.0435379   -0.256 0.798073    
+`Age^10`                -0.0903360  0.0378650   -2.386 0.017045 *  
+`Age^11`                 0.0612326  0.0333078    1.838 0.066006 .  
+`Age^12`                 0.0262475  0.0283345    0.926 0.354266    
+Income.L                -0.3502377  0.0264531  -13.240  &lt; 2e-16 ***
+Income.Q                -0.0569607  0.0243932   -2.335 0.019538 *  
+Income.C                -0.0041762  0.0236997   -0.176 0.860127    
+`Income^4`              -0.0237810  0.0236771   -1.004 0.315192    
+`Income^5`              -0.0074909  0.0232958   -0.322 0.747790    
+`Income^6`              -0.0109228  0.0227628   -0.480 0.631334    
+`Income^7`               0.0103935  0.0224654    0.463 0.643621    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 143396  on 177576  degrees of freedom
+Residual deviance: 113093  on 177543  degrees of freedom
+AIC: 113161
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+</div>
+<p>For Model 3 includes the fewest variables, and has the worst log loss, although it isn’t that different at 0.320. However</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>logRegFit_M3 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., </span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> diabetesTrain3,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">"glm"</span>,</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="st">"binomial"</span>,</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">summaryFunction =</span> mnLogLoss))</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>logRegFit_M3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Generalized Linear Model 
+
+177577 samples
+     8 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142061, 142063, 142062, 142061, 142061 
+Resampling results:
+
+  logLoss 
+  0.319831</code></pre>
+</div>
+</div>
+<p>The summary of Model 3 is below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logRegFit_M3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+NULL
+
+Coefficients:
+                         Estimate Std. Error  z value Pr(&gt;|z|)    
+(Intercept)             -4.626176   0.041416 -111.701  &lt; 2e-16 ***
+HighBPYes                0.748884   0.017548   42.677  &lt; 2e-16 ***
+HighCholYes              0.535599   0.016214   33.033  &lt; 2e-16 ***
+BMI                      0.059374   0.001068   55.580  &lt; 2e-16 ***
+HeartDiseaseorAttackYes  0.322682   0.020738   15.560  &lt; 2e-16 ***
+PhysActivityYes         -0.055260   0.016737   -3.302 0.000961 ***
+GenHlth.L                1.668667   0.030921   53.966  &lt; 2e-16 ***
+GenHlth.Q               -0.378702   0.025334  -14.948  &lt; 2e-16 ***
+GenHlth.C               -0.072468   0.019863   -3.648 0.000264 ***
+`GenHlth^4`              0.014621   0.014726    0.993 0.320757    
+Age.L                    2.381773   0.079914   29.804  &lt; 2e-16 ***
+Age.Q                   -0.736736   0.076075   -9.684  &lt; 2e-16 ***
+Age.C                   -0.252703   0.070693   -3.575 0.000351 ***
+`Age^4`                 -0.030813   0.067445   -0.457 0.647775    
+`Age^5`                 -0.168704   0.064867   -2.601 0.009302 ** 
+`Age^6`                  0.086306   0.060798    1.420 0.155737    
+`Age^7`                  0.014041   0.055708    0.252 0.801007    
+`Age^8`                  0.011945   0.049818    0.240 0.810499    
+`Age^9`                 -0.005493   0.043557   -0.126 0.899650    
+`Age^10`                -0.089525   0.037873   -2.364 0.018088 *  
+`Age^11`                 0.060742   0.033307    1.824 0.068197 .  
+`Age^12`                 0.027491   0.028322    0.971 0.331716    
+Income.L                -0.377760   0.025878  -14.598  &lt; 2e-16 ***
+Income.Q                -0.062488   0.024326   -2.569 0.010206 *  
+Income.C                -0.001657   0.023639   -0.070 0.944109    
+`Income^4`              -0.024261   0.023622   -1.027 0.304380    
+`Income^5`              -0.006451   0.023241   -0.278 0.781326    
+`Income^6`              -0.011844   0.022704   -0.522 0.601913    
+`Income^7`               0.008511   0.022409    0.380 0.704079    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 143396  on 177576  degrees of freedom
+Residual deviance: 113529  on 177548  degrees of freedom
+AIC: 113587
+
+Number of Fisher Scoring iterations: 6</code></pre>
+</div>
+</div>
+<p>Overall, Model 1 with 21 variables performed the best on the training set.</p>
+</section>
+<section id="classification-tree" class="level2">
+<h2 class="anchored" data-anchor-id="classification-tree">Classification Tree</h2>
+<p>Classification trees, also referred to as decision trees, are another way to predict classification.</p>
+<p>Fitting a classification tree is similar to logistic regression except the method is “rpart” and we can add a tuning parameter. The tuning parameter is called the complexity parameter and this parameter helps control the size of the tree. The parameter is a threshold for improvement in the tree at each split and if this threshold is not met the node is not pursued. The complexity parameter also applies to pruning of the tree.</p>
+<p>The tree fit for Model 1 is shown before. The algorithm determined that a complexity parameter of 0.001 produced the optimal model with a log loss of 0.356.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>treeFit_M1 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., </span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> diabetesTrain1,</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">"rpart"</span>,</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">summaryFunction =</span> mnLogLoss),</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>                   <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">cp =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.1</span>, <span class="fl">0.001</span>)))</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>treeFit_M1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CART 
+
+177577 samples
+    21 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142061, 142063, 142062, 142061, 142061 
+Resampling results across tuning parameters:
+
+  cp     logLoss  
+  0.000  0.4449775
+  0.001  0.3551252
+  0.002  0.3551917
+  0.003  0.3552626
+  0.004  0.3553258
+  0.005  0.3553258
+  0.006  0.3844857
+  0.007  0.4037576
+  0.008  0.4037576
+  0.009  0.4037576
+  0.010  0.4037576
+  0.011  0.4037576
+  0.012  0.4037576
+  0.013  0.4037576
+  0.014  0.4037576
+  0.015  0.4037576
+  0.016  0.4037576
+  0.017  0.4037576
+  0.018  0.4037576
+  0.019  0.4037576
+  0.020  0.4037576
+  0.021  0.4037576
+  0.022  0.4037576
+  0.023  0.4037576
+  0.024  0.4037576
+  0.025  0.4037576
+  0.026  0.4037576
+  0.027  0.4037576
+  0.028  0.4037576
+  0.029  0.4037576
+  0.030  0.4037576
+  0.031  0.4037576
+  0.032  0.4037576
+  0.033  0.4037576
+  0.034  0.4037576
+  0.035  0.4037576
+  0.036  0.4037576
+  0.037  0.4037576
+  0.038  0.4037576
+  0.039  0.4037576
+  0.040  0.4037576
+  0.041  0.4037576
+  0.042  0.4037576
+  0.043  0.4037576
+  0.044  0.4037576
+  0.045  0.4037576
+  0.046  0.4037576
+  0.047  0.4037576
+  0.048  0.4037576
+  0.049  0.4037576
+  0.050  0.4037576
+  0.051  0.4037576
+  0.052  0.4037576
+  0.053  0.4037576
+  0.054  0.4037576
+  0.055  0.4037576
+  0.056  0.4037576
+  0.057  0.4037576
+  0.058  0.4037576
+  0.059  0.4037576
+  0.060  0.4037576
+  0.061  0.4037576
+  0.062  0.4037576
+  0.063  0.4037576
+  0.064  0.4037576
+  0.065  0.4037576
+  0.066  0.4037576
+  0.067  0.4037576
+  0.068  0.4037576
+  0.069  0.4037576
+  0.070  0.4037576
+  0.071  0.4037576
+  0.072  0.4037576
+  0.073  0.4037576
+  0.074  0.4037576
+  0.075  0.4037576
+  0.076  0.4037576
+  0.077  0.4037576
+  0.078  0.4037576
+  0.079  0.4037576
+  0.080  0.4037576
+  0.081  0.4037576
+  0.082  0.4037576
+  0.083  0.4037576
+  0.084  0.4037576
+  0.085  0.4037576
+  0.086  0.4037576
+  0.087  0.4037576
+  0.088  0.4037576
+  0.089  0.4037576
+  0.090  0.4037576
+  0.091  0.4037576
+  0.092  0.4037576
+  0.093  0.4037576
+  0.094  0.4037576
+  0.095  0.4037576
+  0.096  0.4037576
+  0.097  0.4037576
+  0.098  0.4037576
+  0.099  0.4037576
+  0.100  0.4037576
+
+logLoss was used to select the optimal model using the smallest value.
+The final value used for the model was cp = 0.001.</code></pre>
+</div>
+</div>
+<p>The tree fit for Model 2 is shown below. The optimal model also had a log loss of 0.356, but in this case used a complexity parameter of 0.002.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>treeFit_M2 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> diabetesTrain2,</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">"rpart"</span>,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">summaryFunction =</span> mnLogLoss),</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>                   <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">cp =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.1</span>, <span class="fl">0.001</span>)))</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>treeFit_M2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CART 
+
+177577 samples
+    13 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142061, 142062, 142062, 142062, 142061 
+Resampling results across tuning parameters:
+
+  cp     logLoss  
+  0.000  0.3974042
+  0.001  0.3557157
+  0.002  0.3559032
+  0.003  0.3559032
+  0.004  0.3559556
+  0.005  0.3559854
+  0.006  0.3748089
+  0.007  0.4037576
+  0.008  0.4037576
+  0.009  0.4037576
+  0.010  0.4037576
+  0.011  0.4037576
+  0.012  0.4037576
+  0.013  0.4037576
+  0.014  0.4037576
+  0.015  0.4037576
+  0.016  0.4037576
+  0.017  0.4037576
+  0.018  0.4037576
+  0.019  0.4037576
+  0.020  0.4037576
+  0.021  0.4037576
+  0.022  0.4037576
+  0.023  0.4037576
+  0.024  0.4037576
+  0.025  0.4037576
+  0.026  0.4037576
+  0.027  0.4037576
+  0.028  0.4037576
+  0.029  0.4037576
+  0.030  0.4037576
+  0.031  0.4037576
+  0.032  0.4037576
+  0.033  0.4037576
+  0.034  0.4037576
+  0.035  0.4037576
+  0.036  0.4037576
+  0.037  0.4037576
+  0.038  0.4037576
+  0.039  0.4037576
+  0.040  0.4037576
+  0.041  0.4037576
+  0.042  0.4037576
+  0.043  0.4037576
+  0.044  0.4037576
+  0.045  0.4037576
+  0.046  0.4037576
+  0.047  0.4037576
+  0.048  0.4037576
+  0.049  0.4037576
+  0.050  0.4037576
+  0.051  0.4037576
+  0.052  0.4037576
+  0.053  0.4037576
+  0.054  0.4037576
+  0.055  0.4037576
+  0.056  0.4037576
+  0.057  0.4037576
+  0.058  0.4037576
+  0.059  0.4037576
+  0.060  0.4037576
+  0.061  0.4037576
+  0.062  0.4037576
+  0.063  0.4037576
+  0.064  0.4037576
+  0.065  0.4037576
+  0.066  0.4037576
+  0.067  0.4037576
+  0.068  0.4037576
+  0.069  0.4037576
+  0.070  0.4037576
+  0.071  0.4037576
+  0.072  0.4037576
+  0.073  0.4037576
+  0.074  0.4037576
+  0.075  0.4037576
+  0.076  0.4037576
+  0.077  0.4037576
+  0.078  0.4037576
+  0.079  0.4037576
+  0.080  0.4037576
+  0.081  0.4037576
+  0.082  0.4037576
+  0.083  0.4037576
+  0.084  0.4037576
+  0.085  0.4037576
+  0.086  0.4037576
+  0.087  0.4037576
+  0.088  0.4037576
+  0.089  0.4037576
+  0.090  0.4037576
+  0.091  0.4037576
+  0.092  0.4037576
+  0.093  0.4037576
+  0.094  0.4037576
+  0.095  0.4037576
+  0.096  0.4037576
+  0.097  0.4037576
+  0.098  0.4037576
+  0.099  0.4037576
+  0.100  0.4037576
+
+logLoss was used to select the optimal model using the smallest value.
+The final value used for the model was cp = 0.001.</code></pre>
+</div>
+</div>
+<p>The tree fit for Model 3 is shown below. The algorithm in this case selected a cp of 0, corresponding to a log loss of 0.353. A cp of 0 suggests that the full tree is used with no pruning.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>treeFit_M3 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> ., </span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> diabetesTrain3,</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>                  <span class="at">method =</span> <span class="st">"rpart"</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>                                           <span class="at">summaryFunction =</span> mnLogLoss),</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>                   <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">cp =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.1</span>, <span class="fl">0.001</span>)))</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>treeFit_M3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CART 
+
+177577 samples
+     8 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142062, 142061, 142062, 142062, 142061 
+Resampling results across tuning parameters:
+
+  cp     logLoss  
+  0.000  0.3513916
+  0.001  0.3556906
+  0.002  0.3557023
+  0.003  0.3558871
+  0.004  0.3558871
+  0.005  0.3558934
+  0.006  0.3846496
+  0.007  0.4037576
+  0.008  0.4037576
+  0.009  0.4037576
+  0.010  0.4037576
+  0.011  0.4037576
+  0.012  0.4037576
+  0.013  0.4037576
+  0.014  0.4037576
+  0.015  0.4037576
+  0.016  0.4037576
+  0.017  0.4037576
+  0.018  0.4037576
+  0.019  0.4037576
+  0.020  0.4037576
+  0.021  0.4037576
+  0.022  0.4037576
+  0.023  0.4037576
+  0.024  0.4037576
+  0.025  0.4037576
+  0.026  0.4037576
+  0.027  0.4037576
+  0.028  0.4037576
+  0.029  0.4037576
+  0.030  0.4037576
+  0.031  0.4037576
+  0.032  0.4037576
+  0.033  0.4037576
+  0.034  0.4037576
+  0.035  0.4037576
+  0.036  0.4037576
+  0.037  0.4037576
+  0.038  0.4037576
+  0.039  0.4037576
+  0.040  0.4037576
+  0.041  0.4037576
+  0.042  0.4037576
+  0.043  0.4037576
+  0.044  0.4037576
+  0.045  0.4037576
+  0.046  0.4037576
+  0.047  0.4037576
+  0.048  0.4037576
+  0.049  0.4037576
+  0.050  0.4037576
+  0.051  0.4037576
+  0.052  0.4037576
+  0.053  0.4037576
+  0.054  0.4037576
+  0.055  0.4037576
+  0.056  0.4037576
+  0.057  0.4037576
+  0.058  0.4037576
+  0.059  0.4037576
+  0.060  0.4037576
+  0.061  0.4037576
+  0.062  0.4037576
+  0.063  0.4037576
+  0.064  0.4037576
+  0.065  0.4037576
+  0.066  0.4037576
+  0.067  0.4037576
+  0.068  0.4037576
+  0.069  0.4037576
+  0.070  0.4037576
+  0.071  0.4037576
+  0.072  0.4037576
+  0.073  0.4037576
+  0.074  0.4037576
+  0.075  0.4037576
+  0.076  0.4037576
+  0.077  0.4037576
+  0.078  0.4037576
+  0.079  0.4037576
+  0.080  0.4037576
+  0.081  0.4037576
+  0.082  0.4037576
+  0.083  0.4037576
+  0.084  0.4037576
+  0.085  0.4037576
+  0.086  0.4037576
+  0.087  0.4037576
+  0.088  0.4037576
+  0.089  0.4037576
+  0.090  0.4037576
+  0.091  0.4037576
+  0.092  0.4037576
+  0.093  0.4037576
+  0.094  0.4037576
+  0.095  0.4037576
+  0.096  0.4037576
+  0.097  0.4037576
+  0.098  0.4037576
+  0.099  0.4037576
+  0.100  0.4037576
+
+logLoss was used to select the optimal model using the smallest value.
+The final value used for the model was cp = 0.</code></pre>
+</div>
+</div>
+<p>Overall, Model 3 is the best model of the three for classification tree fitting.</p>
+</section>
+<section id="random-forest" class="level2">
+<h2 class="anchored" data-anchor-id="random-forest">Random Forest</h2>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

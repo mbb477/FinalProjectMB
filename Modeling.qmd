@@ -7,8 +7,263 @@ editor: visual
 
 # Introduction
 
-```{r}
+The goal of this modeling document is to explain the process of model fitting for prediction of diabetes using the Diabetes Health Indicators Dataset from 2015. This data set is a subset of data taken from the Behavioral Risk Factor Surveillance System (BRFSS) run by the Centers for Disease Control and Prevention (CDC). This data is obtained through a health-related telephone survey. The Diabetes Health Indicators Dataset contains 21 variables and 253,680 observations.
 
-#diabetes
+For modeling, 3 candidate models will be fit using logistic regression, classification tree and random forest. This will be done using the caret package. Various options are available for measuring performance of the model. Accuracy is the most common measure and the default in caret for classification models, but log loss will be used here for all models.
+
+Log loss takes into account the uncertainty of predictions by penalizing models more heavily for incorrect predictions. This means that the further the prediction probability is from the actual value, the higher the log loss is. So a model with a lower log loss is more desireable. Log loss is preferred for this data because it is imbalanced, with 86% of the observations being non-diabeticss. If accuracy is used, the models predictions might be more biased towards the more frequent class and as a result could have high prediction accuracy for the more frequent class, but fail to identify many minority class cases. By penalizing models for incorrect predictions, log loss allows a more balanced view of performance for the classes.
+
+# Model Fitting
+
+To fit the models, the data needs to be imported using read_csv from tidyverse. This csv file is data modified during the exploratory data analysis step where the category levels were assigned more meaningful labels. Since data classes are not preserved, the categories need to also be converted to factors again.
+
+```{r}
+#| warning: false
+#| message: false
+#load libraries
+library(tidyverse)
+library(caret)
+#read in data
+diabetes1 <- read_csv("diabetes.csv", show_col_types = FALSE)
+#convert to factors
+diabetes1  <- diabetes1 |>
+  mutate(Diabetes_binary = as.factor(Diabetes_binary),
+         Age = factor(Age,ordered = TRUE, levels = 
+                        c("Age_18to24", "Age_25to29", 
+                          "Age_30to34", "Age_35to39",
+                          "Age_40to44", "Age_45to49", 
+                          "Age_50to54", "Age_55to59", 
+                          "Age_60to64", "Age_65to69", 
+                          "Age_70to74", "Age_75to79", 
+                          "Age_80_or_above")),
+         Education = factor(Education, ordered = TRUE, levels =
+                              c("No_School", "Primary_and_Middle",
+                                "Some_High_School", "Graduated_High_School",
+                                "Some_College", "Graduated_College")),
+         Sex = as.factor(Sex),
+         Income = factor(Income, ordered = TRUE, levels = 
+                           c("Less_than_10K",
+                             "From_10K_to_under_15K",
+                             "From_15K_to_under_20K",
+                             "From_20K_to_under_25K", 
+                             "From_25K_to_under_35K",
+                             "From_35K_to_under_50K", 
+                             "From_50K_to_under_75K",
+                             "From_75k_or_more")),
+         DiffWalk = as.factor(DiffWalk),
+         NoDocbcCost = as.factor(NoDocbcCost),
+         AnyHealthcare = as.factor(AnyHealthcare),
+         HvyAlcoholConsump = as.factor(HvyAlcoholConsump),
+         Smoker = as.factor(Smoker),
+         CholCheck = as.factor(CholCheck),
+         PhysActivity = as.factor(PhysActivity),
+         HeartDiseaseorAttack = as.factor(HeartDiseaseorAttack),
+         Stroke = as.factor(Stroke),
+         HighBP = as.factor(HighBP),
+         HighChol = as.factor(HighChol),
+         Fruits = as.factor(Fruits),
+         Veggies = as.factor(Veggies),
+         GenHlth = factor(GenHlth, ordered = TRUE, levels = 
+                            c("Excellent", "Very_Good", "Good", 
+                               "Fair", "Poor")))
+diabetes1
 
 ```
+
+The models that will be tested are the following:
+
+1.   Full model with all 21 variables
+2.   Model with 13 variables as identified in EDA
+3.   Model with Age, BMI, HighBP, HighChol, Income , HeartDiseaseorAttack and GenHlth variables.
+
+The data will all 21 variables will be used as a reference point since there are not that many variables. The second model was determined using EDA. The third model contains 4 variables known scientifically to be associated with diabetes risk, Age, BMI, HighBP and HighChol. In addition the Income, HeartDiseaseorAttack and GenHlth variables will be included.
+
+The next step is to create new data sets for each of the models and split the data into testing and training sets.
+
+### Model 1
+
+Data will be split 70/30 for training and testing. Model 1 data includes all variables, so the imported data above will be used. The createPartition() function from caret is used as it tries to maintain the class distribution (for the Diabetes_binary variable) for both sets.
+
+```{r}
+#Set seed for reproducibility
+set.seed(100)
+#partition data
+trainIndex <- createDataPartition(diabetes1$Diabetes_binary, 
+                                  p = 0.7, 
+                                  list = FALSE)
+#create training set
+diabetesTrain1 <- diabetes1[trainIndex, ]
+#create test set
+diabetesTest1 <- diabetes1[-trainIndex, ]
+diabetesTrain1
+diabetesTest1
+
+```
+
+### Model 2
+
+For model 2, we can use the training and test sets above with the appropriate variable removed.
+
+```{r}
+diabetesTrain2 <- diabetesTrain1 |>
+  select(-CholCheck,-Smoker, -Fruits, -Veggies, -AnyHealthcare, -NoDocbcCost,
+         -Sex, -Education)
+diabetesTest2 <- diabetesTest1 |>
+  select(-CholCheck,-Smoker, -Fruits, -Veggies, -AnyHealthcare, -NoDocbcCost,
+         -Sex, -Education)
+diabetesTrain2
+diabetesTest2
+
+```
+
+### Model 3
+
+Similar to what was done for model 2, the training and test sets for model 3 can be obtained by removing columns from model 2 training and test sets.
+
+```{r}
+diabetesTrain3 <- diabetesTrain2 |>
+  select(-Stroke,-MentHlth, -PhysHlth, -HvyAlcoholConsump, -DiffWalk)
+diabetesTest3 <- diabetesTest2 |>
+  select(-Stroke,-MentHlth, -PhysHlth, -HvyAlcoholConsump, -DiffWalk)
+diabetesTrain3
+diabetesTest3
+
+```
+
+Now some models can be fit to these data sets.
+
+## Logistic Regression
+
+Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification of a new observation. The event is binary, so typcially refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.
+
+For fitting logistic regression in caret, we need to specify the method as glm, although there are other options. Since our response is binary, the family is "binomial". Since we want to use log loss, we need to specify this as the metric in train as well as in the trainControl for summaryFunction. When using log loss, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation for the method using 5 folds.
+
+The fit for Model 1 with all 21 variables is shown below. The log loss for the fit is 0.317. This would not be considered high but how good it is would require some kind of baseline.
+
+```{r}
+logRegFit_M1 <- train(Diabetes_binary ~ ., 
+                  data = diabetesTrain1,
+                  method = "glm",
+                  family = "binomial",
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", 
+                                           number = 5,
+                                           classProbs = TRUE,
+                                           summaryFunction = mnLogLoss))
+logRegFit_M1
+
+
+```
+
+The summary for Model 1 fit is below.
+
+```{r}
+summary(logRegFit_M1)
+
+```
+
+Model 2 is fit the same way. Even though variables were carefully selected using EDA, the log loss is slightly worse than that for Model 1, with a value of 0.319.
+
+```{r}
+logRegFit_M2 <- train(Diabetes_binary ~ ., 
+                  data = diabetesTrain2,
+                  method = "glm",
+                  family = "binomial",
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", 
+                                           number = 5,
+                                           classProbs = TRUE,
+                                           summaryFunction = mnLogLoss))
+logRegFit_M2
+
+```
+
+The summary of Model 2 is below.
+
+```{r}
+summary(logRegFit_M2)
+
+```
+
+For Model 3 includes the fewest variables, and has the worst log loss, although it isn't that different at 0.320. However
+
+```{r}
+logRegFit_M3 <- train(Diabetes_binary ~ ., 
+                  data = diabetesTrain3,
+                  method = "glm",
+                  family = "binomial",
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", 
+                                           number = 5,
+                                           classProbs = TRUE,
+                                           summaryFunction = mnLogLoss))
+logRegFit_M3
+
+```
+
+The summary of Model 3 is below.
+
+```{r}
+summary(logRegFit_M3)
+
+```
+
+Overall, Model 1 with 21 variables performed the best on the training set.
+
+## Classification Tree
+
+Classification trees, also referred to as decision trees, are another way to predict classification.
+
+Fitting a classification tree is similar to logistic regression except the method is "rpart" and we can add a tuning parameter. The tuning parameter is called the complexity parameter and this parameter helps control the size of the tree. The parameter is a threshold for improvement in the tree at each split and if this threshold is not met the node is not pursued. The complexity parameter also applies to pruning of the tree.
+
+The tree fit for Model 1 is shown before. The algorithm determined that a complexity parameter of 0.001 produced the optimal model with a log loss of 0.356.
+
+```{r}
+treeFit_M1 <- train(Diabetes_binary ~ ., 
+                  data = diabetesTrain1,
+                  method = "rpart",
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", 
+                                           number = 5,
+                                           classProbs = TRUE,
+                                           summaryFunction = mnLogLoss),
+                   tuneGrid = expand.grid(cp = seq(0, 0.1, 0.001)))
+treeFit_M1
+
+```
+
+The tree fit for Model 2 is shown below. The optimal model also had a log loss of 0.356, but in this case used a complexity parameter of 0.002.
+
+```{r}
+treeFit_M2 <- train(Diabetes_binary ~ ., 
+                  data = diabetesTrain2,
+                  method = "rpart",
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", 
+                                           number = 5,
+                                           classProbs = TRUE,
+                                           summaryFunction = mnLogLoss),
+                   tuneGrid = expand.grid(cp = seq(0, 0.1, 0.001)))
+treeFit_M2
+
+```
+
+The tree fit for Model 3 is shown below. The algorithm in this case selected a cp of 0, corresponding to a log loss of 0.353. A cp of 0 suggests that the full tree is used with no pruning.
+
+```{r}
+treeFit_M3 <- train(Diabetes_binary ~ ., 
+                  data = diabetesTrain3,
+                  method = "rpart",
+                  metric = "logLoss",
+                  trControl = trainControl(method = "cv", 
+                                           number = 5,
+                                           classProbs = TRUE,
+                                           summaryFunction = mnLogLoss),
+                   tuneGrid = expand.grid(cp = seq(0, 0.1, 0.001)))
+treeFit_M3
+
+```
+
+Overall, Model 3 is the best model of the three for classification tree fitting.
+
+## Random Forest
