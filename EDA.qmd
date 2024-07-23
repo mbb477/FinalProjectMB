@@ -7,11 +7,11 @@ editor: visual
 
 # Introduction
 
-The Behavioral Risk Factor Surveillance System (BRFSS) is a system run by the Centers for Disease Control and Prevention (CDC) that uses telephone surveys to collect health-related information from individuals in the United States every year. The system began in 1984 and collects more than 400,000 responses each year. The Diabetes Health Indicators Dataset that will be discussed here is a subset of the data obtained from the BRFSS for 2015. This data set contains 21 of the original 330 variables and 253.680 of the 441,455 original responses. Retention of the 21 variables in this data was based on what was believed to have potential relevance for diabetes.
+The Behavioral Risk Factor Surveillance System (BRFSS) is a system run by the Centers for Disease Control and Prevention (CDC) that uses telephone surveys to collect health-related information from individuals in the United States every year. The system began in 1984 and collects more than 400,000 responses each year. The Diabetes Health Indicators Dataset that will be discussed here is a subset of the data obtained from the BRFSS for 2015. This data set contains 21 of the original 330 variables and 253,680 of the 441,455 original responses. Retention of the 21 variables in this data was based on what was believed to have potential relevance for diabetes.
 
 The goal of this document is to use exploratory data analysis (EDA) to understand the data through validation, examining missingness, cleaning up the data and investigating distributions. This information can also help us decide what variables to include in our model. The end goal of this project is to obtain the best model to predict diabetes. Details of the EDA are presented below. The response variable is Diabetes_binary, where 0 indicates that the individual does not have diabetes and 1 means the individual has prediabetes or diabetes.
 
-The variables chosen to be included in the modeling process are HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, PhysActivity, HvyAlcoholConsump, GenHlth, MentHlth, PhysHlth, DiffWalk, Age and Income. HighBP corresponds to whether an individual has ever been told they have high blood pressure. HighChol corresponds to whether an individual has ever been told that they have high cholesterol. Both of these variables are often present in diabetics and are part of the conditions encompassing metabolic syndrome. BMI is body mass index and is known to greatly increase diabetes risk as the increased weigh increases insulin resistance. Stroke corresponds to whether and individual has ever had a stroke or not. HeartDiseaseorAttack corresponds to whether and individual has ever had a heart attack or has heart disease. The risk of both of these conditions is increased in diabetics. PhysActivity corresponds to whether an individual has exercised in the last 30 days. It does not indicate anything about frequency over those 30 days. HvyAlcoholConsump corresponds to whether and individual consumes a lot of alcohol. "Heavy" consumption is referred to as greater than 14 drink a week for males and greater than 7 drinks a week for women. GenHlth is a variable includes 5 levels, used to categorized how an individual viewed their general health at the time of the survey. MentHlh and PhysHlth correspond to the number of days in the last 30 days the individual felt that their mental health or physical health were poor. DiffWalk is a yes/no response indicting whether the individual has difficulty walking or climbing stairs. Age indicates the age grouping of the individual. The 13 groupings start at age 18-24, with subsequent levels in increments of 5 years and the final level corresponding to 80+ years. Finally, income corresponds to 8 levels generally in 5K increments, ranging from less than 10K, to greater than 75k. The details of selecting the 13 variables described here are discussed below for the EDA.
+The variables chosen to be included in the modeling process are HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, PhysActivity, HvyAlcoholConsump, GenHlth, MentHlth, PhysHlth, DiffWalk, Age and Income. HighBP corresponds to whether an individual has ever been told they have high blood pressure. HighChol corresponds to whether an individual has ever been told that they have high cholesterol. Both of these variables are often present in diabetics and are part of the conditions encompassing metabolic syndrome. BMI is body mass index and is known to greatly increase diabetes risk as the increased weight increases insulin resistance. Stroke corresponds to whether and individual has ever had a stroke or not. HeartDiseaseorAttack corresponds to whether and individual has ever had a heart attack or has heart disease. The risk of both of these conditions is increased in diabetics as well. PhysActivity corresponds to whether an individual has exercised in the last 30 days. It does not indicate anything about frequency over those 30 days. HvyAlcoholConsump corresponds to whether and individual consumes a lot of alcohol. "Heavy" consumption is referred to as greater than 14 drinks a week for males and greater than 7 drinks a week for women. GenHlth is a variable includes 5 levels, used to categorized how an individual viewed their general health at the time of the survey. MentHlh and PhysHlth correspond to the number of days in the last 30 days the individual felt that their mental health or physical health were poor. DiffWalk is a yes/no response indicating whether the individual has difficulty walking or climbing stairs. Age indicates the age grouping of the individual. The 13 groupings start at age 18-24, with subsequent levels in increments of 5 years and the final level corresponding to 80+ years. Finally, income corresponds to 8 levels generally in 5K increments, ranging from less than 10K, to greater than 75k. The details of selecting the 13 variables described here are discussed below for the EDA.
 
 # EDA Analysis
 
@@ -64,13 +64,12 @@ unique_values
 
 ```
 
-The distribution of these values can be visualized using a density plot, specifically zooming in on the higher range of values.
+The distribution of these values can be visualized using a box plot.
 
 ```{r}
 #plot distribution of BMI between 50 and 100
 ggplot(diabetes_data, aes(x = BMI)) +
-  geom_density(fill = "darksalmon") + 
-  xlim(50, 100)
+  geom_boxplot(fill = "darksalmon")
 
 ```
 
@@ -400,7 +399,7 @@ diabetes |>
 
 ```
 
-The Smoker variable does not appear to be particularly important for diabetes prediction an the proportions are similar. This seems contradictory since it is known that smokers are more likely to have diabetes since nicotine makes cells less responsive to insulin. But the question for respondents was "Have you smoked at least 100 cigarettes (5 packs) in your entire life?" which communicates nothing about when in their life that was and if they are currently smoking. Consequently, this variable will be left out of the model fitting.
+The Smoker variable does not appear to be particularly important for diabetes prediction and the proportions are similar. This seems contradictory since it is known that smokers are more likely to have diabetes since nicotine makes cells less responsive to insulin. But the question for respondents was "Have you smoked at least 100 cigarettes (5 packs) in your entire life?" which communicates nothing about when in their life that was and if they are currently smoking. Consequently, this variable will be left out of the model fitting.
 
 ```{r}
 #Contingency table for Smoker
@@ -410,6 +409,8 @@ diabetes |>
   pivot_wider(names_from = Diabetes_binary, values_from = count)
 
 ```
+
+Visualization of smoking status is presented below in a bar chart.
 
 ```{r}
 ggplot(diabetes, aes(x = Smoker, fill = Diabetes_binary)) + 
@@ -502,7 +503,7 @@ ggplot(diabetes, aes(x = HighBP, fill = Diabetes_binary)) +
                         c("Not Diabetic", "Diabetic/Prediabetic"))
 ```
 
-We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
+We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. As discused previously, there are values in the 50-100 range that are not as apparent in this histogram. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
 
 ```{r}
 ggplot(data = diabetes, aes(BMI)) +
@@ -544,7 +545,7 @@ t_test_MentHlth
 
 ```
 
-Below is the distribution of the MentHlth variable. it is not normal, but given the number of observation, the t-test holds due to the Central Limit Theorem.
+Below is the distribution of the MentHlth variable. It is not normal, but given the number of observation, the t-test holds due to the Central Limit Theorem.
 
 ```{r}
 ggplot(data = diabetes, aes(MentHlth)) +
@@ -572,7 +573,7 @@ t_test_PhysHlth
 
 ```
 
-Below is the distribution of the PhysHlth variable. it is not normal, but given the number of observation, the t-test holds.
+Below is the distribution of the PhysHlth variable. It is not normal, but given the number of observation, the t-test holds.
 
 ```{r}
 ggplot(data = diabetes, aes(PhysHlth)) +
