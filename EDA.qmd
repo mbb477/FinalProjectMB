@@ -17,9 +17,7 @@ The variables chosen to be included in the modeling process are HighBP, HighChol
 
 The first step is to read in the data. Since the data is a csv file, this can be done using read_csv() from tidyverse.
 
-```{r}
-#| warning: false
-#| message: false
+```{r, warning=FALSE, message=FALSE}
 #load libraries
 library(tidyverse)
 library(psych)
@@ -86,7 +84,7 @@ diabetes_z_outlier
 
 ```
 
-Morbid obesity is considered to be anything over 40. According to the National Health and Nutrition Examination Survey (NHANES), 9.2% of adults were considered morbidly obese in 2018. To see how this diabetes indicators set aligns with this, counts can be calculated. By the counts in this data, 4.5% of individuals are morbidly obese. Since this is around half of the actual population incidence, the values classified as potential outliers will be retained to keep the data set as close to a population representation as possible.
+Morbid obesity is considered to be anything over 40. According to the National Health and Nutrition Examination Survey (NHANES), 9.2% of adults were considered morbidly obese in 2018. To see how this diabetes indicators set aligns with this, counts can be calculated. By the counts in this data, 4.5% of individuals are morbidly obese. Since this is around half of the actual population incidence, the values classified as potential outliers by z-score will be retained to keep the data set as close to a population representation as possible.
 
 ```{r}
 diabetes_data |>
@@ -124,7 +122,7 @@ diabetes <- diabetes_data |>
                                     "From_25K_to_under_35K",
                                     "From_35K_to_under_50K", 
                                     "From_50K_to_under_75K",
-                                    "From_75k_or_more")),
+                                    "From_75K_or_more")),
          Sex = factor(Sex, levels = c(0, 1), labels = c("Female", "Male")),
          DiffWalk = factor(DiffWalk, levels = c(0, 1), labels = c("No", "Yes")),
          NoDocbcCost = factor(NoDocbcCost, levels = c(0, 1), labels = 
@@ -153,7 +151,7 @@ diabetes
 
 ```
 
-Now that the data is properly formatted, contingency tables can be generated. The distribuition of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process.
+Now that the data is properly formatted, contingency tables can be generated. The distribuition of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process. Note that this is just a visual observation and conclusion to eliminate variables for different models to be used alongside the full data set in the model fitting process. Normally, statistical significance would be determined.
 
 ```{r}
 #Contingency table for sex
@@ -168,12 +166,11 @@ diabetes |>
 We can also use bar charts to visualize the proportions of category levels relative to the diabetes variable. This visualization makes it easier to see the similarities or differences in proportions.
 
 ```{r}
-ggplot(diabetes, aes(x = Sex, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = Sex)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and 
-       without Diabetes by Gender") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Sex of Individuals by Diabetes Status") +
+  scale_fill_discrete(name="Sex Drinker") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 ```
 
@@ -193,8 +190,7 @@ The bar chart for better visualization of Income is shown below.
 ```{r}
 ggplot(diabetes, aes(x = Income, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and 
-       without Diabetes by Income Level") +
+  labs(y = "Count", title = "Proportion of Individuals with and without Diabetes by Income Level") +
   scale_fill_discrete(name="Status", labels = 
                         c("Not Diabetic", "Diabetic/Prediabetic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -218,8 +214,7 @@ Looking at the bar chart, the patterns for income and education look nearly iden
 ```{r}
 ggplot(diabetes, aes(x = Education, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and 
-       without Diabetes by Education Level") +
+  labs(y = "Count", title = "Proportion of Individuals with and without Diabetes by Education Level") +
   scale_fill_discrete(name="Status", labels = 
                         c("Not Diabetic", "Diabetic/Prediabetic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -266,8 +261,7 @@ A visualization of the Age variable is presented below.
 ```{r}
 ggplot(diabetes, aes(x = Age, fill = Diabetes_binary)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with 
-       and without diabetes by Age") +
+  labs(y = "Count", title = "Proportion of Individuals with and without Diabetes by Age") +
   scale_fill_discrete(name="Status", labels = 
                         c("Not Diabetic", "Diabetic/Prediabetic")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
@@ -275,7 +269,7 @@ ggplot(diabetes, aes(x = Age, fill = Diabetes_binary)) +
 
 ```
 
-Next, the relationship between the diabetes variable and Fruits will be examined. The proportions for no fruit and 1 or more a day are similar, 0.129 vs 0.158) so this variable will be excluded from modeling.
+Next, the relationship between the diabetes variable and Fruits will be examined. The proportions for no fruit eaten for diabetics and non-diabetics is fairly similar (0.36 vs 0.41) so this variable will be excluded from modeling.
 
 ```{r}
 #Contingency table for Fruits
@@ -287,7 +281,7 @@ diabetes |>
 
 ```
 
-Similarly, vegetable consumption does not appear to be an important variable for diabetes classification, with proportions of 0.18 and 0.13 for the diabetes category.
+Similarly, vegetable consumption does not appear to be an important variable for diabetes classification, with proportions for no fruit eaten for diabetics and non-diabetics being 0.18 and 0.24 respectdively.
 
 ```{r}
 #Contingency table for Veggies
@@ -299,7 +293,7 @@ diabetes |>
 
 ```
 
-The contingency table for PhysActivity shows that the proportion of those with diabetes who do not exercise is nearly double that of those without diabetes who do exercise. This variable may be important for diabetes prediction, although it's relevance may be more closely tied to how much a person exercises in the time period specified. The question to respondents was if they had engaged in any physical activity in the last 30 days so it does not take into account frequency of exercise in that time period. However, may people who exercise at all try to do so regularly, so this variable will be included in the modeling process.
+The contingency table for PhysActivity shows that the proportion of diabetics exercised is 0.777 compared to 0.631 for non-diabetics. This variable may be important for diabetes prediction, although it's relevance may be more closely tied to how much a person exercises in the time period specified. The question to respondents was if they had engaged in any physical activity in the last 30 days so it does not take into account frequency of exercise in that time period. However, many people who exercise at all try to do so regularly, so this variable will be included in the modeling process.
 
 ```{r}
 #Contingency table for PhysActivity
@@ -310,17 +304,18 @@ diabetes |>
 
 ```
 
+The bar chart for PhysActivity is presented below.
+
 ```{r}
-ggplot(diabetes, aes(x = PhysActivity, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = PhysActivity)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and 
-       without diabetes by Physical Activity") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Physical Activity") +
+  scale_fill_discrete(name="Physical Activity") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 ```
 
-The HvyAlcoholConsump variable may be important for diabetes prediction. The contingency table below shows that the proportion of individuals who don't drink alcohol heavily and have diabetes is close to 3 times that of those who do drink heavily and have diabetes.
+The HvyAlcoholConsump variable may be important for diabetes prediction. The contingency table below shows that the proportion of non-diabetic individuals who drink alcohol heavily is close to 3 times that of diabetics.
 
 ```{r}
 #Contingency table for HvyAlcoholConsum
@@ -333,16 +328,15 @@ diabetes |>
 ```
 
 ```{r}
-ggplot(diabetes, aes(x = HvyAlcoholConsump, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = HvyAlcoholConsump)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without 
-       diabetes by Alcohol Consumption Activity") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Heavy Drinking") +
+  scale_fill_discrete(name="Heavy Drinker") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 ```
 
-The NoDocbcCost represents whether an individual did or did not see a doctor because of the healthcare cost. The contingency table shows that the proportions of individuals with diabetes for the two NoDocBcCost levels were similar, at 0.136 and 0.175. Because of the similarity, this variable will not be included in model fitting.
+The NoDocbcCost represents whether an individual did or did not see a doctor because of the healthcare cost. The contingency table shows that the proportions of individuals with who did not see a doctor because of cost was similar for diabetics and non-diabetic, with proportions of 0.106 and 0.081, respectively. Because of the similarity, this variable will not be included in model fitting.
 
 ```{r}
 #Contingency table for NoDocbcCost
@@ -353,7 +347,7 @@ diabetes |>
 
 ```
 
-The AnyHealthcare variable is similar in proportion for both levels for those with diabetes, with proportions of 0.115 and 0.140. This variable will be excluded from model fitting.
+The AnyHealthcare variable is similar in proportion for those who did not have healthcare at 0.04 and 0.05 for diabetics and non-diabetics respectively. This variable will be excluded from model fitting.
 
 ```{r}
 #Contingency table for AnyHealthcare
@@ -364,7 +358,7 @@ diabetes |>
 
 ```
 
-The contingency table below for the HeartDiseaseorAttack variable suggests that this variable may be important for prediction. Nearly 32% of respondents who had heart disease or a heart attack had diabetes, compared to 12% of those who did not have these conditions.
+The contingency table below for the HeartDiseaseorAttack variable suggests that this variable may be important for prediction. about 22% of diabetics had heart disease or a heart attack compared to 7% of those who did not have diabetes.
 
 ```{r}
 #Contingency table for NHeartDiseaseorAttack
@@ -378,13 +372,11 @@ diabetes |>
 Below is a visualization of the HeartDiseaseorAttack variable.
 
 ```{r}
-ggplot(diabetes, aes(x = HeartDiseaseorAttack, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = HeartDiseaseorAttack)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of individuals with and without 
-       diabetes by Heart Disease or Heart Attack Status") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
-
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Heart Disease or Heart Attack") +
+  scale_fill_discrete(name="Heart Disease or Attack") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 ```
 
@@ -413,17 +405,16 @@ diabetes |>
 Visualization of smoking status is presented below in a bar chart.
 
 ```{r}
-ggplot(diabetes, aes(x = Smoker, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = Smoker)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and without 
-       Diabetes by Smoking Status") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Smoking") +
+  scale_fill_discrete(name="Smoker Status") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 
 ```
 
-The contingency table for CholCheck shows that the proportions of those who have had their cholesterol checked in the last 5 years and those who have not and have diabetes are 0.025 and 0.144. While the difference may be significant, people who are sick or have chronic conditions are more likely to have their cholesterol checked more frequently than healthy individuals. Thus this variable is not necessarily important for prediction, but rather reflective of diabetes management, which may also be accompanied by other health conditions. For these reasons, this variable will be excluded from the model fitting.
+The contingency table for CholCheck shows that the proportions of those with and without diabetes who did not have their cholesterol checked in the last 5 years are 0.007 and 0.04, respectively. While the difference may be significant, people who are sick or have chronic conditions are more likely to have their cholesterol checked more frequently than healthy individuals. Thus this variable is not necessarily important for prediction, but rather reflective of diabetes management, which may also be accompanied by other health conditions. For these reasons, this variable will be excluded from the model fitting.
 
 ```{r}
 #Contingency table for CholCheck
@@ -434,7 +425,7 @@ diabetes |>
 
 ```
 
-The contingency table for DiffWalk is below. For individuals with diabetes, the proportion of those who responded yes to difficulty walking or climbing stairs is 0.307 compared to that of those who responded no, 0.105. This variable may be important for predicting diabetes and will be included in model fitting.
+The contingency table for DiffWalk is below. For individuals with diabetes, the proportion of those who responded yes to difficulty walking or climbing stairs is 0.371 compared to that of those who wiithout diabetes, 0.135. This variable may be important for predicting diabetes and will be included in model fitting.
 
 ```{r}
 #Contingency table for DiffWalk
@@ -448,16 +439,15 @@ diabetes |>
 Visualization of DiffWalk relative to diabetes status is presented below.
 
 ```{r}
-ggplot(diabetes, aes(x = DiffWalk, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = DiffWalk)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and without 
-       Diabetes by Difficulting Walking/Climbing Stairs") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Ability to Walk/Climb Stairs") +
+  scale_fill_discrete(name="Difficulty Walking") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 ```
 
-The contingency table for HighChol shows proportions of 0.08 for those who don't have high cholesterol but have diabetes, compared to 0.22 for those how have high cholesterol and diabetes. Since this is more than a 2-fold difference and diabetes and high blood pressure often occur together, this variable will be included in the model fitting.
+The contingency table for HighChol shows proportions of 0.67 and 0.38 for high cholesterol for diabetics and non-diabetics, respectively. Since this is close to a 2-fold difference and diabetes and high blood pressure often occur together, this variable will be included in the model fitting.
 
 ```{r}
 #Contingency table for HighChol
@@ -471,16 +461,15 @@ diabetes |>
 A bar chart visualizing HighChol is below.
 
 ```{r}
-ggplot(diabetes, aes(x = HighChol, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = HighChol)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and without 
-       Diabetes by Cholesterol Status") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Cholesterol") +
+  scale_fill_discrete(name="High Cholesterol Status") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
 
 ```
 
-Similar to HighChol, HighBP among those with diabetes was 4 times that of those without high blood pressure. High blood pressure often occurs in conjunction with diabetes as part of metabolic syndrome and so will be included in the model fitting.
+Similar to HighChol, HighBP was more commone among diabetics than non-diabetics, with proportions off 0.75 and 0.38, respectively. High blood pressure often occurs in conjunction with diabetes as part of metabolic syndrome and so will be included in the model fitting.
 
 ```{r}
 #Contingency table for HighBP
@@ -494,13 +483,12 @@ diabetes |>
 Visualization for HighBP is below and similar to that of HighChol.
 
 ```{r}
-
-ggplot(diabetes, aes(x = HighBP, fill = Diabetes_binary)) + 
+ggplot(diabetes, aes(x = Diabetes_binary, fill = HighBP)) + 
   geom_bar(position = "fill") +
-  labs(y = "Count", title = "Proportion of Individuals with and without 
-       Diabetes by Blood Pressure Status") +
-  scale_fill_discrete(name="Status", labels = 
-                        c("Not Diabetic", "Diabetic/Prediabetic"))
+  labs(y = "Count", x = "Diabetes Status", title = "Diabetes Status with Respect to Blood Pressure") +
+  scale_fill_discrete(name="High Blood Pressure") + 
+  scale_x_discrete(labels = c("Non_Diabetic" = "Non-Diabetic", "Prediabetic_Diabetic"= "Prediabetic/Diabetic"))
+
 ```
 
 We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. As discused previously, there are values in the 50-100 range that are not as apparent in this histogram. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
@@ -582,7 +570,7 @@ ggplot(data = diabetes, aes(PhysHlth)) +
 
 ```
 
-The contingency table of the GenHlth variable shows that a significantly higher proportion of non-diabetics viewed their health as being "excellent" compared to diabetics. For each subsequent level of progressively worsening opinion of general health, the proportion of diabetics increased while that of non-diabetics decreased. This variable may be important for prediction and will be included in the model fitting.
+The contingency table of the GenHlth variable shows that a significantly higher proportion of non-diabetics viewed their health as being "excellent" compared to diabetics (0.20 vs. 0.032). For each subsequent level of progressively worsening opinion of general health, the proportion of diabetics increased while that of non-diabetics decreased (0.034 vs. 0.130 for poor rating). This variable may be important for prediction and will be included in the model fitting.
 
 ```{r}
 #Contingency table for GenHlth
@@ -611,11 +599,10 @@ A csv file is being created to import into the Modeling document. Unfortunately 
 
 ```{r}
 write_csv(diabetes, "diabetes.csv")
-
 ```
 
 # Conclusion
 
-Based on the exploratory data analysis, The variables have been reduced down to 13 from 21 and will be subsequently used in the model fitting. The model fitting can be accessed in the link below.
+Based on the exploratory data analysis, The variables have been reduced down to 13 from 21. This will be compared to two other models as discussed in the Modeling document. The model fitting can be accessed in the link below.
 
 [Model Fitting](docs/Modeling.html)

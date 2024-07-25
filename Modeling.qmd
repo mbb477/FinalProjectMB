@@ -17,9 +17,7 @@ Log loss takes into account the uncertainty of predictions by penalizing models 
 
 To fit the models, the data needs to be imported using read_csv from tidyverse. This csv file is data modified during the exploratory data analysis step where the category levels were assigned more meaningful labels. Since data classes are not preserved, the categories need to also be converted to factors again.
 
-```{r, warning=FALSE, message=FALSE}
-#| warning: false
-#| message: false
+```{r, warning =FALSE, message=FALSE}
 #load libraries
 library(tidyverse)
 library(caret)
@@ -50,7 +48,7 @@ diabetes1  <- diabetes1 |>
                              "From_25K_to_under_35K",
                              "From_35K_to_under_50K", 
                              "From_50K_to_under_75K",
-                             "From_75k_or_more")),
+                             "From_75K_or_more")),
          DiffWalk = as.factor(DiffWalk),
          NoDocbcCost = as.factor(NoDocbcCost),
          AnyHealthcare = as.factor(AnyHealthcare),
