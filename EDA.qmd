@@ -7,11 +7,11 @@ editor: visual
 
 # Introduction
 
-The Behavioral Risk Factor Surveillance System (BRFSS) is a system run by the Centers for Disease Control and Prevention (CDC) that uses telephone surveys to collect health-related information from individuals in the United States every year. The system began in 1984 and collects more than 400,000 responses each year. The Diabetes Health Indicators Dataset that will be discussed here is a subset of the data obtained from the BRFSS for 2015. This data set contains 21 of the original 330 variables and 253,680 of the 441,455 original responses. Retention of the 21 variables in this data was based on what was believed to have potential relevance for diabetes.
+The Behavioral Risk Factor Surveillance System (BRFSS) is a system run by the Centers for Disease Control and Prevention (CDC) that uses telephone surveys to collect health-related information from individuals in the United States every year. The system began in 1984 and collects more than 400,000 responses each year. The Diabetes Health Indicators Dataset that will be discussed here is a subset of the data obtained from the BRFSS for 2015. This data set contains 22 of the original 330 variables and 253,680 of the 441,455 original responses. Retention of the 21 feature variables in this data was based on what was believed to have potential relevance for diabetes.
 
-The goal of this document is to use exploratory data analysis (EDA) to understand the data through validation, examining missingness, cleaning up the data and investigating distributions. This information can also help us decide what variables to include in our model. The end goal of this project is to obtain the best model to predict diabetes. Details of the EDA are presented below. The response variable is Diabetes_binary, where 0 indicates that the individual does not have diabetes and 1 means the individual has prediabetes or diabetes.
+The goal of this document is to use exploratory data analysis (EDA) to understand the data through validation, examining missingness, cleaning up the data and investigating distributions. This information can also aid in deciding what predictors to use for building classification models. The end goal of this project is to obtain the best model to predict whether and individual has prediabetes/diabetes or not. Details of the EDA are presented below. The response variable is Diabetes_binary, where 0 indicates that the individual does not have diabetes and 1 means the individual has prediabetes or diabetes.
 
-The variables chosen to be included in the modeling process are HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, PhysActivity, HvyAlcoholConsump, GenHlth, MentHlth, PhysHlth, DiffWalk, Age and Income. HighBP corresponds to whether an individual has ever been told they have high blood pressure. HighChol corresponds to whether an individual has ever been told that they have high cholesterol. Both of these variables are often present in diabetics and are part of the conditions encompassing metabolic syndrome. BMI is body mass index and is known to greatly increase diabetes risk as the increased weight increases insulin resistance. Stroke corresponds to whether and individual has ever had a stroke or not. HeartDiseaseorAttack corresponds to whether and individual has ever had a heart attack or has heart disease. The risk of both of these conditions is increased in diabetics as well. PhysActivity corresponds to whether an individual has exercised in the last 30 days. It does not indicate anything about frequency over those 30 days. HvyAlcoholConsump corresponds to whether and individual consumes a lot of alcohol. "Heavy" consumption is referred to as greater than 14 drinks a week for males and greater than 7 drinks a week for women. GenHlth is a variable includes 5 levels, used to categorized how an individual viewed their general health at the time of the survey. MentHlh and PhysHlth correspond to the number of days in the last 30 days the individual felt that their mental health or physical health were poor. DiffWalk is a yes/no response indicating whether the individual has difficulty walking or climbing stairs. Age indicates the age grouping of the individual. The 13 groupings start at age 18-24, with subsequent levels in increments of 5 years and the final level corresponding to 80+ years. Finally, income corresponds to 8 levels generally in 5K increments, ranging from less than 10K, to greater than 75k. The details of selecting the 13 variables described here are discussed below for the EDA.
+The variables chosen to be included in the modeling process are HighBP, HighChol, BMI, Stroke, HeartDiseaseorAttack, PhysActivity, HvyAlcoholConsump, GenHlth, MentHlth, PhysHlth, DiffWalk, Age and Income. HighBP corresponds to whether an individual has ever been told they have high blood pressure. HighChol corresponds to whether an individual has ever been told that they have high cholesterol. Both of these variables are often present in diabetics and are part of the conditions encompassing metabolic syndrome. BMI is body mass index and is known to greatly increase diabetes risk as the increased weight increases insulin resistance. Stroke corresponds to whether and individual has ever had a stroke or not. HeartDiseaseorAttack corresponds to whether and individual has ever had a heart attack or has heart disease. The risk of both of these conditions is increased in diabetics as well. PhysActivity corresponds to whether an individual has exercised in the last 30 days. It does not indicate anything about frequency over those 30 days. HvyAlcoholConsump corresponds to whether and individual consumes a lot of alcohol. "Heavy" consumption is referred to as greater than 14 drinks a week for males and greater than 7 drinks a week for women. GenHlth is a variable includes 5 levels, used to categorized how an individual viewed their general health at the time of the survey. MentHlh and PhysHlth correspond to the number of days in the last 30 days the individual felt that their mental health or physical health were poor. DiffWalk is a yes/no response indicating whether the individual has difficulty walking or climbing stairs. Age indicates the age grouping of the individual. The 13 groupings start at age 18-24, with subsequent levels in increments of 5 years and the final level corresponding to 80+ years. Finally, income corresponds to 8 levels generally in 5K increments, ranging from less than 10K, to greater than 75k. The details of selecting these 13 predictor variables described here are discussed below for the EDA.
 
 # EDA Analysis
 
@@ -84,7 +84,7 @@ diabetes_z_outlier
 
 ```
 
-Morbid obesity is considered to be anything over 40. According to the National Health and Nutrition Examination Survey (NHANES), 9.2% of adults were considered morbidly obese in 2018. To see how this diabetes indicators set aligns with this, counts can be calculated. By the counts in this data, 4.5% of individuals are morbidly obese. Since this is around half of the actual population incidence, the values classified as potential outliers by z-score will be retained to keep the data set as close to a population representation as possible.
+Morbid obesity is considered to be anything over 40. According to the National Health and Nutrition Examination Survey (NHANES), 9.2% of adults were considered morbidly obese in 2018. To see how this aligns with the diabetes indicators set , counts can be calculated. By the counts in this data, 4.5% of individuals are morbidly obese. Since this is around half of the actual population incidence, the values classified as potential outliers by z-score will be retained to keep the data set as close to a population representation as possible.
 
 ```{r}
 diabetes_data |>
@@ -93,7 +93,7 @@ diabetes_data |>
 
 ```
 
-For the most of the data, since it is categorical, we can look at contingency tables to get an idea of their relationship with diabetes status. For this purpose, the data is going to be manipulated first. The categorical variables will be converted to factors and the levels renamed to better communicate what the levels actually mean. For this purpose, factor() will be use as it allows renaming of levels and specifying if a factor is ordered, as some of the categories are.
+For the most of the data, since it is categorical, we can look at contingency tables to get an idea of their relationship with diabetes status. For this purpose, the data is going to be manipulated first. The categorical variables will be converted to factors and the levels renamed to better communicate what the levels actually mean. The factor() function will be used as it allows renaming of levels and specifying if a factor is ordered, as some of the categories are.
 
 ```{r}
 #convert categorical columns to factors
@@ -152,7 +152,7 @@ diabetes
 
 ```
 
-Now that the data is properly formatted, contingency tables can be generated. The distribution of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process. Note that this is just a visual observation and conclusion to eliminate variables for different models to be used alongside the full data set in the model fitting process. Normally, statistical significance would be determined.
+Now that the data is properly formatted, contingency tables can be generated. The first contingency table for the Sex variable is shown below. The distribution of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process. Note that this is just a visual observation and conclusion to eliminate variables for different models to be used alongside the full data set in the model fitting process. Normally, statistical significance would be determined, which can be a more difficult process with the imbalance in the data.
 
 ```{r}
 #Contingency table for sex
@@ -186,7 +186,7 @@ diabetes |>
 
 ```
 
-The bar chart for better visualization of Income is shown below.
+The bar chart for better visualization of the Income variable is shown below.
 
 ```{r}
 ggplot(diabetes, aes(x = Income, fill = Diabetes_binary)) + 
@@ -194,7 +194,7 @@ ggplot(diabetes, aes(x = Income, fill = Diabetes_binary)) +
   labs(y = "Count", title = "Proportion of Individuals with and without Diabetes by Income Level") +
   scale_fill_discrete(name="Status", labels = 
                         c("Not Diabetic", "Diabetic/Prediabetic")) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(size = 9, angle = 45, hjust = 1))
 
 
 ```
@@ -606,6 +606,6 @@ write_csv(diabetes, "diabetes.csv")
 
 # Conclusion
 
-Based on the exploratory data analysis, the variables have been reduced down to 13 from 21. This will be compared to two other models as discussed in the Modeling document. The model fitting can be accessed in the link below.
+Based on the exploratory data analysis, the predictor variables have been reduced down to 13 from 21. This will be compared to two other models as discussed in the Modeling document. The model fitting can be accessed in the link below.
 
-[Model Fitting](docs/Modeling.html)
+[Model Fitting](Modeling.html)
