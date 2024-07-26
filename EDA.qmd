@@ -100,7 +100,8 @@ For the most of the data, since it is categorical, we can look at contingency ta
 #Remove BMI outliers
 diabetes <- diabetes_data |>
   mutate(Diabetes_binary = factor(Diabetes_binary, levels = c(0, 1),
-                                  labels = c("Non_Diabetic", "Prediabetic_Diabetic")),
+                                  labels = 
+                                    c("Non_Diabetic", "Prediabetic_Diabetic")),
          Education = factor(Education, ordered = TRUE, levels = c(1:6),
                             labels = c("No_School", "Primary_and_Middle",
                                        "Some_High_School", 
@@ -151,7 +152,7 @@ diabetes
 
 ```
 
-Now that the data is properly formatted, contingency tables can be generated. The distribuition of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process. Note that this is just a visual observation and conclusion to eliminate variables for different models to be used alongside the full data set in the model fitting process. Normally, statistical significance would be determined.
+Now that the data is properly formatted, contingency tables can be generated. The distribution of males and females appears to be relatively similar, with males appearing to have a slightly higher propensity to have prediabetes or diabetes compared to women. Because the difference amounts to less than a few percent, this variable will be excluded from the modeling process. Note that this is just a visual observation and conclusion to eliminate variables for different models to be used alongside the full data set in the model fitting process. Normally, statistical significance would be determined.
 
 ```{r}
 #Contingency table for sex
@@ -174,7 +175,7 @@ ggplot(diabetes, aes(x = Diabetes_binary, fill = Sex)) +
 
 ```
 
-In looking at income, the prevalence of diabetes generally decreases as income increases, indicating that socioeconomic status may be an important predictor of diabetes. This variable will be included in the model fitting process.
+In looking at income, the prevalence of diabetes generally decreases as income increases, indicating that it may be an important predictor of diabetes. This variable will be included in the model fitting process.
 
 ```{r}
 #Contingency table for income
@@ -198,7 +199,7 @@ ggplot(diabetes, aes(x = Income, fill = Diabetes_binary)) +
 
 ```
 
-Next, we will examine the contingency table for eductation. Based on the output, it appears that the decreases with income. This is consistent with the contingency table for income, since income is generally associated with level of education. Looking at the bar chart, the patterns for income and education look nearly identical.
+Next, we will examine the contingency table for education. Based on the output, it appears that diabetes decreases with income. This is similar to the contingency table for income, which makes intuitive sense since income is generally associated with level of education.
 
 ```{r}
 #Contingency table for Education
@@ -281,7 +282,7 @@ diabetes |>
 
 ```
 
-Similarly, vegetable consumption does not appear to be an important variable for diabetes classification, with proportions for no fruit eaten for diabetics and non-diabetics being 0.18 and 0.24 respectdively.
+Similarly, vegetable consumption does not appear to be an important variable for diabetes classification, with proportions for no fruit eaten for diabetics and non-diabetics being 0.18 and 0.24 respectively.
 
 ```{r}
 #Contingency table for Veggies
@@ -293,7 +294,7 @@ diabetes |>
 
 ```
 
-The contingency table for PhysActivity shows that the proportion of diabetics exercised is 0.777 compared to 0.631 for non-diabetics. This variable may be important for diabetes prediction, although it's relevance may be more closely tied to how much a person exercises in the time period specified. The question to respondents was if they had engaged in any physical activity in the last 30 days so it does not take into account frequency of exercise in that time period. However, many people who exercise at all try to do so regularly, so this variable will be included in the modeling process.
+The contingency table for PhysActivity shows that the proportion of diabetics who exercised is 0.777 compared to 0.631 for non-diabetics. This variable may be important for diabetes prediction, although it's relevance may be more closely tied to how much a person exercises in the time period specified. The question to respondents was if they had engaged in any physical activity in the last 30 days so it does not take into account frequency of exercise in that time period. However, many people who exercise at all try to do so regularly, so this variable will be included in the modeling process.
 
 ```{r}
 #Contingency table for PhysActivity
@@ -327,6 +328,8 @@ diabetes |>
 
 ```
 
+A bar chart for heavy alcohol consumption is below.
+
 ```{r}
 ggplot(diabetes, aes(x = Diabetes_binary, fill = HvyAlcoholConsump)) + 
   geom_bar(position = "fill") +
@@ -347,7 +350,7 @@ diabetes |>
 
 ```
 
-The AnyHealthcare variable is similar in proportion for those who did not have healthcare at 0.04 and 0.05 for diabetics and non-diabetics respectively. This variable will be excluded from model fitting.
+The AnyHealthcare variable is similar in proportion for those who did not have healthcare, with proportions of 0.04 and 0.05 for diabetics and non-diabetics respectively. This variable will be excluded from model fitting.
 
 ```{r}
 #Contingency table for AnyHealthcare
@@ -358,7 +361,7 @@ diabetes |>
 
 ```
 
-The contingency table below for the HeartDiseaseorAttack variable suggests that this variable may be important for prediction. about 22% of diabetics had heart disease or a heart attack compared to 7% of those who did not have diabetes.
+The contingency table below for the HeartDiseaseorAttack variable suggests that this variable may be important for prediction. About 22% of diabetics had heart disease or a heart attack compared to 7% of those who did not have diabetes.
 
 ```{r}
 #Contingency table for NHeartDiseaseorAttack
@@ -380,7 +383,7 @@ ggplot(diabetes, aes(x = Diabetes_binary, fill = HeartDiseaseorAttack)) +
 
 ```
 
-The contingency table for stroke is shown below. Nearly 32% of those respondents who had a stroke had diabetes, compared to those who didn't have a stroke (13%). This suggests that this variable may be important for predicition.
+The contingency table for stroke is shown below. Nearly 32% of those respondents who had a stroke had diabetes, compared to those who didn't have a stroke (13%). This suggests that this variable may be important for prediction.
 
 ```{r}
 #Contingency table for Stroke
@@ -425,7 +428,7 @@ diabetes |>
 
 ```
 
-The contingency table for DiffWalk is below. For individuals with diabetes, the proportion of those who responded yes to difficulty walking or climbing stairs is 0.371 compared to that of those who wiithout diabetes, 0.135. This variable may be important for predicting diabetes and will be included in model fitting.
+The contingency table for DiffWalk is below. For individuals with diabetes, the proportion of those who responded yes to difficulty walking or climbing stairs is 0.371 compared 0.135 for those without diabetes. This variable may be important for predicting diabetes and will be included in model fitting.
 
 ```{r}
 #Contingency table for DiffWalk
@@ -469,7 +472,7 @@ ggplot(diabetes, aes(x = Diabetes_binary, fill = HighChol)) +
 
 ```
 
-Similar to HighChol, HighBP was more commone among diabetics than non-diabetics, with proportions off 0.75 and 0.38, respectively. High blood pressure often occurs in conjunction with diabetes as part of metabolic syndrome and so will be included in the model fitting.
+Similar to HighChol, HighBP was more common among diabetics than non-diabetics, with proportions off 0.75 and 0.38, respectively. High blood pressure often occurs in conjunction with diabetes as part of metabolic syndrome and so will be included in the model fitting.
 
 ```{r}
 #Contingency table for HighBP
@@ -491,7 +494,7 @@ ggplot(diabetes, aes(x = Diabetes_binary, fill = HighBP)) +
 
 ```
 
-We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. As discused previously, there are values in the 50-100 range that are not as apparent in this histogram. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
+We can look at the distribution of BMI in this data by examining a histogram. The distribution is relatively normal with some right skew. As discussed previously, there are values in the 50-100 range that are not as apparent in this histogram. Since the data is unbalanced, with more respondents not having diabetes, the skewed portion of the histogram likely corresponds to individuals with diabetes. Generally speaking, a BMI between 18.5-24.9 corresponds to a normal weight.
 
 ```{r}
 ggplot(data = diabetes, aes(BMI)) +
@@ -561,7 +564,7 @@ t_test_PhysHlth
 
 ```
 
-Below is the distribution of the PhysHlth variable. It is not normal, but given the number of observation, the t-test holds.
+Below is the distribution of the PhysHlth variable. It is not normal, but given the number of observations, the t-test holds.
 
 ```{r}
 ggplot(data = diabetes, aes(PhysHlth)) +
@@ -603,6 +606,6 @@ write_csv(diabetes, "diabetes.csv")
 
 # Conclusion
 
-Based on the exploratory data analysis, The variables have been reduced down to 13 from 21. This will be compared to two other models as discussed in the Modeling document. The model fitting can be accessed in the link below.
+Based on the exploratory data analysis, the variables have been reduced down to 13 from 21. This will be compared to two other models as discussed in the Modeling document. The model fitting can be accessed in the link below.
 
 [Model Fitting](docs/Modeling.html)

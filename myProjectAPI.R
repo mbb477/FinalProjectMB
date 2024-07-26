@@ -96,13 +96,9 @@ function() {
 #* @param GenHlth Input one option (Excellent, Very_Good, Good, Fair, Poor)
 #* @param MentHlth A number between 0 and 30
 #* @param PhysHlth A number between 0 and 30
-#* @param Age Input one option (Age_18to24, Age_25to29, Age_30to34, Age_35to39, Age_40to44,
-#* Age_45to49, Age_50to54, Age_55to59, Age_60to64, Age_65to69, Age_70to74, Age_75to79, Age_80_or_above)
-#* @param Education Input one option (No_School, Primary_and_Middle, Some_High_School, 
-#* Graduated_High_School, Some_College, Graduated_College) 
-#* @param Income Input one option (Less_than_10K, From_10K_to_under_15K, From_15K_to_under_20K,
-#* From_20K_to_under_25K, From_25K_to_under_35K, From_35K_to_under_50K, From_50K_to_under_75K,
-#* From_75k_or_more)
+#* @param Age Input one option (Age_18to24, Age_25to29, Age_30to34, Age_35to39, Age_40to44, Age_45to49, Age_50to54, Age_55to59, Age_60to64, Age_65to69, Age_70to74, Age_75to79, Age_80_or_above)
+#* @param Education Input one option (No_School, Primary_and_Middle, Some_High_School, Graduated_High_School, Some_College, Graduated_College) 
+#* @param Income Input one option (Less_than_10K, From_10K_to_under_15K, From_15K_to_under_20K, From_20K_to_under_25K, From_25K_to_under_35K, From_35K_to_under_50K, From_50K_to_under_75K, From_75k_or_more)
 #* @get /pred
 function(HighBP = "No", HighChol = "No", CholCheck = "Yes", Smoker = "No", Stroke = "No",
          HeartDiseaseorAttack = "No", PhysActivity = "Yes", Fruits = "One_or_more_per_day",
@@ -159,14 +155,15 @@ function(HighBP = "No", HighChol = "No", CholCheck = "Yes", Smoker = "No", Strok
   list(pred = pred)
 }
 
+# Some API call URLs
 
-#Some API call URLs
-#
 #Call 1
-http://127.0.0.1:8000/pred?HighBP=Yes&HighChol=Yes&CholCheck=Yes&Smoker=No&Stroke=No&HeartDiseaseorAttack=Yes&PhysActivity=Yes&Fruits=One_or_more_per_day&Veggies=None&HvyAlcoholConsump=No&AnyHealthcare=Yes&DiffWalk=Yes&Sex=Male&NoDocbcCost=No&BMI=43&GenHlth=Fair&MentHlth=2&PhysHlth=15&Age=Age_60to64&Education=Graduated_College&Income=From_10K_to_under_15K
+#  http://127.0.0.1:8000/pred?HighBP=No&HighChol=No&CholCheck=Yes&Smoker=No&Stroke=No&HeartDiseaseorAttack=No&PhysActivity=Yes&Fruits=None&Veggies=One_or_more_per_day&HvyAlcoholConsump=No&AnyHealthcare=Yes&DiffWalk=No&Sex=Male&NoDocbcCost=No&BMI=24&GenHlth=Very_Good&MentHlth=0&PhysHlth=0&Age=Age_55to59&Education=Graduated_High_School&Income=From_15K_to_under_20K
 
 #Call 2
-http://127.0.0.1:8000/pred?HighBP=No&HighChol=No&CholCheck=Yes&Smoker=No&Stroke=No&HeartDiseaseorAttack=No&PhysActivity=Yes&Fruits=One_or_more_per_day&Veggies=One_or_more_per_day&HvyAlcoholConsump=No&AnyHealthcare=Yes&DiffWalk=Yes&Sex=Male&NoDocbcCost=No&BMI=21&GenHlth=Very_Good&MentHlth=2&PhysHlth=0&Age=Age_30to34&Education=Some_High_School&Income=From_35K_to_under_50K
+#  http://127.0.0.1:8000/pred?HighBP=Yes&HighChol=Yes&CholCheck=Yes&Smoker=No&Stroke=No&HeartDiseaseorAttack=No&PhysActivity=No&Fruits=One_or_more_per_day&Veggies=One_or_more_per_day&HvyAlcoholConsump=No&AnyHealthcare=Yes&DiffWalk=Yes&Sex=Female&NoDocbcCost=Yes&BMI=28&GenHlth=Poor&MentHlth=30&PhysHlth=30&Age=Age_60to64&Education=Graduated_High_School&Income=From_75K_or_more
 
 #Call 3
-http://127.0.0.1:8000/pred?HighBP=Yes&HighChol=No&CholCheck=Yes&Smoker=No&Stroke=No&HeartDiseaseorAttack=No&PhysActivity=Yes&Fruits=One_or_more_per_day&Veggies=One_or_more_per_day&HvyAlcoholConsump=No&AnyHealthcare=Yes&DiffWalk=No&Sex=Female&NoDocbcCost=No&BMI=29&GenHlth=Good&MentHlth=6&PhysHlth=0&Age=Age_35to39&Education=Some_High_School&Income=From_50K_to_under_75K
+#  http://127.0.0.1:8000/pred?HighBP=Yes&HighChol=Yes&CholCheck=Yes&Smoker=Yes&Stroke=Yes&HeartDiseaseorAttack=Yes&PhysActivity=No&Fruits=None&Veggies=One_or_more_per_day&HvyAlcoholConsump=No&AnyHealthcare=Yes&DiffWalk=Yes&Sex=Male&NoDocbcCost=No&BMI=37&GenHlth=Poor&MentHlth=0&PhysHlth=0&Age=Age_65to69&Education=Graduated_College&Income=From_25K_to_under_35K
+
+

@@ -6,9 +6,10 @@ RUN R -e "install.packages('tidyverse')"
 RUN R -e "install.packages('caret')"
 RUN R -e "install.packages('plumber')"
 
-COPY myAPI.R myAPI.R
+COPY myProjectAPI.R myProjectAPI.R
+COPY diabetes.csv diabetes.csv
 
 EXPOSE 8000
 
 ENTRYPOINT ["R", "-e", \
-"pr <- plumber::plumb('myAPI.R'); pr$run(host='0.0.0.0', port=8000)"]
+"pr <- plumber::plumb('myProjectAPI.R'); pr$run(host='0.0.0.0', port=8000)"]
