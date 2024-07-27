@@ -142,7 +142,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>The goal of this document is to explain the process of model fitting for prediction of diabetes using the Diabetes Health Indicators Dataset from 2015. This data set is a subset of data taken from the Behavioral Risk Factor Surveillance System (BRFSS) run by the Centers for Disease Control and Prevention (CDC). This data is obtained through a health-related telephone survey that is conducted every year. The Diabetes Health Indicators Dataset contains 22 variables and 253,680 observations.</p>
+<p>The goal of this document is to explain the process and results of model fitting for prediction of diabetes using the Diabetes Health Indicators Dataset from 2015. This data set is a subset of data taken from the Behavioral Risk Factor Surveillance System (BRFSS) run by the Centers for Disease Control and Prevention (CDC). This data is obtained through a health-related telephone survey that is conducted every year. The Diabetes Health Indicators Dataset contains 22 variables and 253,680 observations.</p>
 <p>For modeling, 3 candidate models will be fit using logistic regression, classification tree and random forest. This will be done using the caret package. Various options are available for measuring performance of the model. Accuracy is the most common measure used and the default in caret for classification models, but log loss will be used here for all models due to the class imbalance in this data set.</p>
 <p>Log loss takes into account the uncertainty of predictions by penalizing models more heavily for incorrect predictions, particularly incorrect confident predictions. This means that the further the prediction probability is from the actual value, the higher the log loss is. So a model with a lower log loss is more desirable. Log loss is preferred for this data because it is imbalanced, with 86% of the observations being non-diabetics. If accuracy is used, the models predictions might be more biased towards the more frequent class and as a result could have high prediction accuracy for the more frequent class, but fail to identify many minority class cases. By penalizing models for incorrect predictions, log loss allows a more balanced view of performance for the classes.</p>
 </section>
@@ -230,17 +230,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The next step is to create new data sets for each of the models and split the data into testing and training sets.</p>
 <section id="model-1" class="level3">
 <h3 class="anchored" data-anchor-id="model-1">Model 1</h3>
-<p>Data will be split 70/30 for training and testing. Model 1 data includes all variables, so the imported data above will be used. The createPartition() function from caret is used as it tries to maintain the class distribution (for the Diabetes_binary response variable) for both sets.</p>
+<p>Data will be split 70/30 for training and testing. Since model 1 includes all variables, the imported data above will be used. The createPartition() function from caret is used as it tries to maintain the class distribution (for the Diabetes_binary response variable) for both sets.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set seed for reproducibility</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#partition data</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Partition data</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>trainIndex <span class="ot">&lt;-</span> <span class="fu">createDataPartition</span>(diabetes1<span class="sc">$</span>Diabetes_binary, </span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">p =</span> <span class="fl">0.7</span>, </span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">list =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#create training set</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Create training set</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>diabetesTrain1 <span class="ot">&lt;-</span> diabetes1[trainIndex, ]</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#create test set</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#Create test set</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>diabetesTest1 <span class="ot">&lt;-</span> diabetes1[<span class="sc">-</span>trainIndex, ]</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>diabetesTrain1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -288,7 +288,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="model-2" class="level3">
 <h3 class="anchored" data-anchor-id="model-2">Model 2</h3>
-<p>For model 2, we can use the training and test sets above and remove the variables not used for this model.</p>
+<p>For model 2, we can use the training and test sets above for model 1 and remove the variables not used for this model.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>diabetesTrain2 <span class="ot">&lt;-</span> diabetesTrain1 <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>CholCheck,<span class="sc">-</span>Smoker, <span class="sc">-</span>Fruits, <span class="sc">-</span>Veggies, <span class="sc">-</span>AnyHealthcare, <span class="sc">-</span>NoDocbcCost,</span>
@@ -389,9 +389,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="logistic-regression" class="level2">
 <h2 class="anchored" data-anchor-id="logistic-regression">Logistic Regression</h2>
-<p>The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification of a new observation. The event is binary, so typicially refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.</p>
+<p>The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification. The event is binary, so typically refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.</p>
 <p>For fitting logistic regression in caret, we need to specify the method as glm, although there are other options. Since our response is binary, the family is “binomial”. Since we want to use log loss, we need to specify this as the metric in train() as well as in the trainControl() using summaryFunction (mnLogLoss). When using log loss, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation for the method (“cv”) using 5 folds (number).</p>
-<p>The fit for Model 1 with all 21 variables is shown below. The log loss for the fit is 0.317.</p>
+<p>The fit for model 1 with all 21 variables is shown below. The log loss for the fit is 0.317.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
@@ -422,7 +422,7 @@ Resampling results:
   0.3168564</code></pre>
 </div>
 </div>
-<p>The summary for Model 1 fit is below.</p>
+<p>The summary for model 1 fit is below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logRegFit_M1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -490,7 +490,7 @@ AIC: 112533
 Number of Fisher Scoring iterations: 6</code></pre>
 </div>
 </div>
-<p>Model 2 is fit the same way. Even though variables were selected using EDA, the log loss is slightly worse than that for Model 1, with a value of 0.319.</p>
+<p>Model 2 is fit the same way. Even though variables were selected using EDA, the log loss is slightly higher than that for model 1, with a value of 0.319.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
@@ -521,7 +521,7 @@ Resampling results:
   0.3186222</code></pre>
 </div>
 </div>
-<p>The summary of Model 2 is below.</p>
+<p>The summary of model 2 is below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logRegFit_M2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -577,7 +577,7 @@ AIC: 113161
 Number of Fisher Scoring iterations: 6</code></pre>
 </div>
 </div>
-<p>For Model 3 includes the fewest variables, and has the worst log loss, although it isn’t that different at 0.320. More important than log loss on the trained model is how the model generalizes to new data.</p>
+<p>Model 3 includes the fewest variables and has the highest log loss, although it isn’t that different at 0.320. More important than log loss on the trained model is how the model generalizes to new data.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
 <span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
@@ -608,7 +608,7 @@ Resampling results:
   0.3198399</code></pre>
 </div>
 </div>
-<p>The summary of Model 3 is below.</p>
+<p>The summary of model 3 is below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(logRegFit_M3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -659,12 +659,12 @@ AIC: 113589
 Number of Fisher Scoring iterations: 6</code></pre>
 </div>
 </div>
-<p>Overall, Model 1 with 21 variables performed the best using the training set.</p>
+<p>Overall, model 1 with 21 variables is the best model based on the log loss.</p>
 </section>
 <section id="classification-tree" class="level2">
 <h2 class="anchored" data-anchor-id="classification-tree">Classification Tree</h2>
-<p>Classification trees, also referred to as decision trees, are another way to predict class membership. The predictor space is split into regions in caret using the Gini Index (default). Other methods for splitting include entropy and deviance. The tree is typically pruned back using classification error rate, but in this case, log loss will be used for pruning since it will be specified in trainControl. For purposes of identifying class membership, classification trees assign membership based on the most prevalent class in the region.</p>
-<p>Fitting a classification tree is similar to logistic regression except the method is “rpart” and we can add a tuning parameter. The tuning parameter is called the complexity parameter (cp) and this parameter helps control the size of the tree. The parameter is a threshold for improvement in the tree at each split and if this threshold is not met the node is not pursued. The complexity parameter also applies to pruning of the tree, but pruning is assessed based on log loss.</p>
+<p>Classification trees, also referred to as decision trees, are another way to predict class membership. The predictor space is split into regions in using the Gini Index or Entropy. The Gini Index measures impurity of a node, which is an indication of how well a node separates the classes. After the tree is grown it is pruned back by removing nodes that do not provide much predictive improvement. For purposes of identifying class membership, classification trees assign membership based on the most prevalent class in the region. Because the diabetes data set has a categorical response variable, the classification tree is appropriate to use for prediction of the two classes.</p>
+<p>Fitting a classification tree using caret is similar to logistic regression except the method is “rpart” and we can add a tuning parameter. The tuning parameter is called the complexity parameter (cp) and this parameter helps control the size of the tree. The parameter is used for the pruning process and the model evaluated for each cp using log loss. A lower cp means less pruning.</p>
 <p>The tree fit for Model 1 is shown before. The algorithm determined that a complexity parameter of 0.002 produced the optimal model with a log loss of 0.356.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
@@ -1067,11 +1067,11 @@ logLoss was used to select the optimal model using the smallest value.
 The final value used for the model was cp = 0.002.</code></pre>
 </div>
 </div>
-<p>All 3 models for classification tree fitting had the same log loss so all three will be used in the model comparisons to identify the best model.</p>
+<p>All 3 models for classification tree fitting had the same log loss so all three will be used in the model comparisons to identify the best model overall.</p>
 </section>
 <section id="random-forest" class="level2">
 <h2 class="anchored" data-anchor-id="random-forest">Random Forest</h2>
-<p>Random forest is an ensemble learning method. Ensemble methods produce many trees and average across these trees to determine prediction, often resulting in better predictions. Random forests are similar to bagging, but instead of using all predictors, uses fewer, randomly selected predictors. This helps reduce correlation and variance when there are particularly strong predictors present in the data. The process for random forests involves creating bootstrap samples to fit on which allows the creation of multiple trees to be averaged across. To create bootstrap samples, the data is treated as a population and resampled with replacement. The random forest method is applied to each of these samples, with each sample run creating a tree. The algorithm for determining splits is the same as classification trees, which involves minimizing the Gini Index. Although the word “average” has been used here, for classification this means using majority vote to determine group membership.</p>
+<p>Random forest is an ensemble learning method. Ensemble methods produce many trees and average across these trees to determine prediction, often resulting in better predictions. Random forests are similar to bagging, but instead of using all predictors, uses fewer, randomly selected predictors. This random selection of features occurs at each split. This helps reduce correlation and variance when there are particularly strong predictors present in the data. The process for random forests involves creating bootstrap samples to fit on which allows the creation of multiple trees to be averaged across. To create bootstrap samples, the data is treated as a population and resampled with replacement. The random forest method is applied to each of these samples, each time creating a tree. The algorithm for determining splits is the same as classification trees, which involves minimizing the Gini Index. The randomization of variables and use of bootstrap samples prevents the need for pruning for ensemble methods such as random forests. Although the word “average” has been used here, for classification this means using majority vote to determine group membership. Using random forest is of interest for the models proposed here because it allows assignment of observations to the two classes, Non_Diabetic or Prediabetic_Diabetic, but is often more advantageous than classification trees because it produces many trees and usually results in better predictions.</p>
 <p>Random Forest fitting in the caret package uses “rf” for the method. Settings for trainControl are the same as before. Random forests have one available tuning parameter, mtry. The mtry tuning parameter refers to the number of randomly selected predictors to use. You can also specify the number of trees for the model to average, which also corresponds to the number of bootstrap samples. This parameter is ntree and the default in caret is 500 trees. A rule of thumb for mtry for classification trees is the square root of the number of parameters.</p>
 <p>Model 1 has 21 parameters so the mtry could be set to 5. The mtry can be set to a higher number, but can significantly increase computation time. Due to computational issues and poorer log loss compared to the previous models, ntree was set to 50 and mtry 1:21 to identify the best mtry for the model. The best mtry for ntree 50 was 16, with a log loss of 0.518. The model was run again with ntree 100 and mtry 13:16. In this case, mtry 15 was slightly better than mtry 16, with a log loss of 0.455 compared to 0.460.</p>
 <p>The final fitting of Model 1 to a random forest is presented below, using ntree 200 and mtry 15. The log loss at this ntree is 0.421.</p>
@@ -1176,7 +1176,57 @@ Resampling results:
 Tuning parameter 'mtry' was held constant at a value of 8</code></pre>
 </div>
 </div>
-<p>It is apparent and makes sense that log loss decreases as ntree increases and it would perhaps drop even more if higher ntree were used, but there is a point of diminishing returns and overall the random forest models do not appear to be as good as the logistic regression and classification tree models based off the log loss results. Model 1 was better overall for random forest fitting, with a log loss of 0.421.</p>
+<p>It is apparent and makes sense that log loss decreases as ntree increases and it would perhaps drop even more if higher ntree were used, but there is a point of diminishing returns and overall the random forest models do not appear to be as good as the logistic regression and classification tree models based off the log loss results.</p>
+<p>Another option is to use the “ranger” method. It has additional tuning parameters and often computes faster than “rf”. Ranger can accept 3 tuning parameters, mtry, splitrule and min.node.size. The splitrule parameter is gini by default. Another option is extratrees, which introduces additional randomness and can be better for data that isn’t balanced. The min.node.size parameter refers to the minimum number of observations in terminal nodes. Higher node size makes the model simpler by requiring more observations to make a split.</p>
+<p>The “ranger” method was only used on model 1 due to extensive computation times (hours) for optimizing tuning parameters. It was initially run with num.trees 50, mtry 1:21, splitrule extratrees and min.node.size of c(5, 10, 20, 30, 40, 50). The optimal model had an mtry of 5 and a min.node.size of 50. The log loss with these parameters and num.trees 200 is 0.321.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Set seed for reproducibility</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">100</span>)</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Run random forest on model 1</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>rfFit_ranger_M1 <span class="ot">&lt;-</span> <span class="fu">train</span>(Diabetes_binary <span class="sc">~</span> .,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>                         <span class="at">data =</span> diabetesTrain1,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>                         <span class="at">method =</span> <span class="st">"ranger"</span>,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>                         <span class="at">metric =</span> <span class="st">"logLoss"</span>,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>                         <span class="at">trControl =</span> <span class="fu">trainControl</span>(<span class="at">method =</span> <span class="st">"cv"</span>, </span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">number =</span> <span class="dv">5</span>,</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">classProbs =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">summaryFunction =</span> mnLogLoss),</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>                         <span class="at">num.trees =</span> <span class="dv">200</span>,</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>                         <span class="at">tuneGrid =</span> <span class="fu">expand.grid</span>(<span class="at">mtry =</span> <span class="dv">5</span>, </span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">splitrule =</span> <span class="st">"extratrees"</span>,</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">min.node.size =</span> <span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Growing trees.. Progress: 96%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 94%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 95%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 92%. Estimated remaining time: 2 seconds.
+Growing trees.. Progress: 96%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 67%. Estimated remaining time: 15 seconds.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>rfFit_ranger_M1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Random Forest 
+
+177577 samples
+    21 predictor
+     2 classes: 'Non_Diabetic', 'Prediabetic_Diabetic' 
+
+No pre-processing
+Resampling: Cross-Validated (5 fold) 
+Summary of sample sizes: 142061, 142063, 142061, 142061, 142062 
+Resampling results:
+
+  logLoss  
+  0.3213257
+
+Tuning parameter 'mtry' was held constant at a value of 5
+Tuning
+ parameter 'splitrule' was held constant at a value of extratrees
+
+Tuning parameter 'min.node.size' was held constant at a value of 50</code></pre>
+</div>
+</div>
+<p>Overall, the best fit was model 1 using “ranger”., giving a log loss of 0.322.</p>
 </section>
 <section id="final-model-selection" class="level2">
 <h2 class="anchored" data-anchor-id="final-model-selection">Final Model Selection</h2>
@@ -1186,47 +1236,55 @@ Tuning parameter 'mtry' was held constant at a value of 8</code></pre>
 <h3 class="anchored" data-anchor-id="logistic-regression-model-1">Logistic Regression Model 1</h3>
 <p>A table of predicted values for the best logistic regression model is below. The actual classes from the test data were added using bind_cols() for purposes of comparison.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>pred_logReg <span class="ot">&lt;-</span> <span class="fu">predict</span>(logRegFit_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co">#extract response column Diabetes_binary from test data</span></span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>Actual <span class="ot">&lt;-</span> diabetesTest1<span class="sc">$</span>Diabetes_binary</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilities with actual class labels</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>pred_logReg_actual_table <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_logReg, <span class="at">Actual =</span> Actual)</span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_logReg_actual_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>pred_logReg <span class="ot">&lt;-</span> <span class="fu">predict</span>(logRegFit_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="co">#extract response column Diabetes_binary from test data</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>Actual <span class="ot">&lt;-</span> diabetesTest1<span class="sc">$</span>Diabetes_binary</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilities with actual class labels</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>pred_logReg_actual_table <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_logReg, <span class="at">Actual =</span> Actual)</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>pred_logReg_actual_table <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(pred_logReg_actual_table)</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>pred_logReg_actual_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Non_Diabetic Prediabetic_Diabetic       Actual
-1    0.6583067          0.341693269 Non_Diabetic
-2    0.9518239          0.048176117 Non_Diabetic
-3    0.9438232          0.056176778 Non_Diabetic
-4    0.8697013          0.130298671 Non_Diabetic
-5    0.9387015          0.061298463 Non_Diabetic
-6    0.9982334          0.001766592 Non_Diabetic</code></pre>
+<pre><code># A tibble: 76,103 × 3
+   Non_Diabetic Prediabetic_Diabetic Actual              
+          &lt;dbl&gt;                &lt;dbl&gt; &lt;fct&gt;               
+ 1        0.658              0.342   Non_Diabetic        
+ 2        0.952              0.0482  Non_Diabetic        
+ 3        0.944              0.0562  Non_Diabetic        
+ 4        0.870              0.130   Non_Diabetic        
+ 5        0.939              0.0613  Non_Diabetic        
+ 6        0.998              0.00177 Non_Diabetic        
+ 7        0.729              0.271   Non_Diabetic        
+ 8        0.260              0.740   Prediabetic_Diabetic
+ 9        0.418              0.582   Prediabetic_Diabetic
+10        0.910              0.0898  Non_Diabetic        
+# ℹ 76,093 more rows</code></pre>
 </div>
 </div>
 <p>The log Loss for this model on the test data can be obtained using logLoss() from the Metrics package. This function takes 2 arguments, both vectors, with one being the actual response values for Diabetes_binary in the test data, and the other the predictions, which are the probabilities for the positive class. To perform this calculation, though, the Diabetes_binary levels need to be numeric. After converting the Diabetes_binary column to numbers, log loss can be computed with vector arguments being Diabetes_binary from the test set and the positive class, Prediabetic_Diabetic, from the test set predictions. The log loss for this model is 0.318.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">#covert Diabetes_binary to numbers</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>numeric_diabetes1 <span class="ot">&lt;-</span> diabetesTest1 <span class="sc">|&gt;</span></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> </span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">ifelse</span>(Diabetes_binary <span class="sc">==</span> <span class="st">"Prediabetic_Diabetic"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best logistic regression model</span></span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>logReg_log_loss <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>                           pred_logReg<span class="sc">$</span>Prediabetic_Diabetic)</span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>logReg_log_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#covert Diabetes_binary to numbers</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>numeric_diabetes1 <span class="ot">&lt;-</span> diabetesTest1 <span class="sc">|&gt;</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> </span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">ifelse</span>(Diabetes_binary <span class="sc">==</span> <span class="st">"Prediabetic_Diabetic"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best logistic regression model</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>logReg_log_loss <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>                           pred_logReg<span class="sc">$</span>Prediabetic_Diabetic)</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>logReg_log_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3179013</code></pre>
 </div>
 </div>
-<p>To obtain a confusion matrix, the probabilities need to be converted to class labels. This is done using predict() but specifying “raw” as the type instead of “prob”. The confusion matrix can be obtained using confusionMatrix(), which accepts the arguments of the predictions and the actual values from the Diabetes_binary column of the test set. The option for positive was specified to ensure the positive class was correctly assigned. In looking at the output, while the accuracy is 86.5%, it can be seen from the matrix that prediabetic/diabetics have close to the same number of false positives as true positives. This is reflected in the Positive Predictive Value metric, which indicates that when the model predicts Prediabetic_Diabetic, it is correct 55.1% of the time. This is in contrast to the Non_Diabetic class, which is predicted correctly 87.7% of the time. The relatively poor identification of the Prediabetic_Diabetic class is also reflected in the low sensitivity of 15.2%.</p>
+<p>To obtain a confusion matrix, the probabilities need to be converted to class labels. This is done using predict() but specifying “raw” as the type instead of “prob”. The confusion matrix can be obtained using confusionMatrix(), which accepts the arguments of the predictions and the actual values from the Diabetes_binary column of the test set. The option for positive was specified to ensure the positive class was correctly assigned. In looking at the output, while the accuracy is 86.5%, it can be seen from the matrix that prediabetic/diabetics have close to the same number of false positives as true positives. This is reflected in the Positive Predictive Value metric, which indicates that when the model predicts prediabetics/diabetics, it is correct 55.1% of the time. This is in contrast to the non-diabetic class, which is predicted correctly 87.7% of the time. The relatively poor identification of the Prediabetic_Diabetic class is also reflected in the low sensitivity of 15.2%, which means that the model correctly identifies 15.2% of all actual prediabetic/diabetic cases.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>pred_logReg_class <span class="ot">&lt;-</span> <span class="fu">predict</span>(logRegFit_M1, <span class="at">newdata =</span> diabetesTest1, </span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"raw"</span>)</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>logReg_confusion <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_logReg_class, </span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>                                    diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>logReg_confusion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>pred_logReg_class <span class="ot">&lt;-</span> <span class="fu">predict</span>(logRegFit_M1, <span class="at">newdata =</span> diabetesTest1, </span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"raw"</span>)</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>logReg_confusion <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_logReg_class, </span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>                                    diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>logReg_confusion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
@@ -1262,41 +1320,49 @@ Prediction             Non_Diabetic Prediabetic_Diabetic
 <h3 class="anchored" data-anchor-id="classification-tree-model-1">Classification Tree Model 1</h3>
 <p>A table of predicted values for classification tree Model is below.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>pred_tree1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table1 <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_tree1, <span class="at">Actual =</span> Actual)</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_tree_actual_table1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>pred_tree1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table1 <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_tree1, <span class="at">Actual =</span> Actual)</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table1 <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(pred_tree_actual_table1)</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Non_Diabetic Prediabetic_Diabetic       Actual
-1    0.6811968            0.3188032 Non_Diabetic
-2    0.9397784            0.0602216 Non_Diabetic
-3    0.9397784            0.0602216 Non_Diabetic
-4    0.9397784            0.0602216 Non_Diabetic
-5    0.8127850            0.1872150 Non_Diabetic
-6    0.9397784            0.0602216 Non_Diabetic</code></pre>
+<pre><code># A tibble: 76,103 × 3
+   Non_Diabetic Prediabetic_Diabetic Actual              
+          &lt;dbl&gt;                &lt;dbl&gt; &lt;fct&gt;               
+ 1        0.681               0.319  Non_Diabetic        
+ 2        0.940               0.0602 Non_Diabetic        
+ 3        0.940               0.0602 Non_Diabetic        
+ 4        0.940               0.0602 Non_Diabetic        
+ 5        0.813               0.187  Non_Diabetic        
+ 6        0.940               0.0602 Non_Diabetic        
+ 7        0.813               0.187  Non_Diabetic        
+ 8        0.396               0.604  Prediabetic_Diabetic
+ 9        0.681               0.319  Prediabetic_Diabetic
+10        0.813               0.187  Non_Diabetic        
+# ℹ 76,093 more rows</code></pre>
 </div>
 </div>
 <p>The log loss for Model 1 on the test data is below. The log loss for this model on the test set is 0.357.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best random forest model</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="co">#use numeric_diabetes1 from logistic regression since it is the same test set</span></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>tree_log_loss1 <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>                           pred_tree1<span class="sc">$</span>Prediabetic_Diabetic)</span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>tree_log_loss1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best random forest model</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="co">#use numeric_diabetes1 from logistic regression since it is the same test set</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>tree_log_loss1 <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>                           pred_tree1<span class="sc">$</span>Prediabetic_Diabetic)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>tree_log_loss1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3569434</code></pre>
 </div>
 </div>
-<p>The confusion matrix was computed as with the logistic regression model. Accuracy is 86.5%, but is biased because it is better at predicting the Non-Diabetic class. For the Prediabetic_Diabetic class, the model classifies correctly 57.1% of the time. In comparison, the Non_Diabetic class is accurately assigned 87.3% of the time. The somewhat poor classification rate of the minority class is reflected in the low sensitivity, 11.6%. The accuracy is higher than the no information rate, but the small difference between the two suggests that the model is not effectively distinguishing between the classes given the imbalance in the data.</p>
+<p>The confusion matrix was computed as with the logistic regression model. Accuracy is 86.5%, but is biased because it is better at predicting the Non_Diabetic class. For the Prediabetic_Diabetic class, of all positive predictions, the model classifies correctly 57.1% of the time. In comparison, the Non_Diabetic class is accurately assigned 87.3% of the time. The sensitivity is also low, indicating that the model correctly identifies 11.6% of all actual prediabetic/diabetic cases. The accuracy is higher than the no information rate, but the small difference between the two also suggests that the model is not effectively distinguishing between the classes given the imbalance in the data.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
-<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>pred_tree_class1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M1, <span class="at">newdata =</span> diabetesTest1, </span>
-<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"raw"</span>)</span>
-<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
-<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>tree_confusion1 <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_tree_class1, </span>
-<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>                                    diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
-<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>tree_confusion1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>pred_tree_class1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M1, <span class="at">newdata =</span> diabetesTest1, </span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>                              <span class="at">type =</span> <span class="st">"raw"</span>)</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>tree_confusion1 <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_tree_class1, </span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>                                    diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>tree_confusion1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
@@ -1332,45 +1398,53 @@ Prediction             Non_Diabetic Prediabetic_Diabetic
 <h3 class="anchored" data-anchor-id="classification-tree-model-2">Classification Tree Model 2</h3>
 <p>Now we can examine Model 2 for the classification tree. The table of predictions is presented below.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>pred_tree2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M2, <span class="at">newdata =</span> diabetesTest2, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table2 <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_tree2, <span class="at">Actual =</span> Actual)</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_tree_actual_table2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>pred_tree2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M2, <span class="at">newdata =</span> diabetesTest2, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table2 <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_tree2, <span class="at">Actual =</span> Actual)</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table2 <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(pred_tree_actual_table2)</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Non_Diabetic Prediabetic_Diabetic       Actual
-1    0.6811968            0.3188032 Non_Diabetic
-2    0.9397784            0.0602216 Non_Diabetic
-3    0.9397784            0.0602216 Non_Diabetic
-4    0.9397784            0.0602216 Non_Diabetic
-5    0.8127850            0.1872150 Non_Diabetic
-6    0.9397784            0.0602216 Non_Diabetic</code></pre>
+<pre><code># A tibble: 76,103 × 3
+   Non_Diabetic Prediabetic_Diabetic Actual              
+          &lt;dbl&gt;                &lt;dbl&gt; &lt;fct&gt;               
+ 1        0.681               0.319  Non_Diabetic        
+ 2        0.940               0.0602 Non_Diabetic        
+ 3        0.940               0.0602 Non_Diabetic        
+ 4        0.940               0.0602 Non_Diabetic        
+ 5        0.813               0.187  Non_Diabetic        
+ 6        0.940               0.0602 Non_Diabetic        
+ 7        0.813               0.187  Non_Diabetic        
+ 8        0.396               0.604  Prediabetic_Diabetic
+ 9        0.681               0.319  Prediabetic_Diabetic
+10        0.813               0.187  Non_Diabetic        
+# ℹ 76,093 more rows</code></pre>
 </div>
 </div>
 <p>The log loss for this model on the test data is below. The log loss is the same as that for Model 1 with 21 variables, 0.357.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co">#covert Diabetes_binary to numbers</span></span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>numeric_diabetes2 <span class="ot">&lt;-</span> diabetesTest2 <span class="sc">|&gt;</span></span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> </span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">ifelse</span>(Diabetes_binary <span class="sc">==</span> <span class="st">"Prediabetic_Diabetic"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best classification tree model</span></span>
-<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>tree_log_loss2 <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes2<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>                           pred_tree2<span class="sc">$</span>Prediabetic_Diabetic)</span>
-<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a>tree_log_loss2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co">#covert Diabetes_binary to numbers</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>numeric_diabetes2 <span class="ot">&lt;-</span> diabetesTest2 <span class="sc">|&gt;</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> </span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">ifelse</span>(Diabetes_binary <span class="sc">==</span> <span class="st">"Prediabetic_Diabetic"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best classification tree model</span></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>tree_log_loss2 <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes2<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>                           pred_tree2<span class="sc">$</span>Prediabetic_Diabetic)</span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>tree_log_loss2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3569434</code></pre>
 </div>
 </div>
 <p>The confusion matrix output is below. The results appear to be identical to the output for Model 1.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>pred_tree_class2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M2, <span class="at">newdata =</span> diabetesTest2, </span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">type =</span> <span class="st">"raw"</span>)</span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>tree_confusion2 <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_tree_class2, </span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>                                    diabetesTest2<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>tree_confusion2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>pred_tree_class2 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M2, <span class="at">newdata =</span> diabetesTest2, </span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">type =</span> <span class="st">"raw"</span>)</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>tree_confusion2 <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_tree_class2, </span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>                                    diabetesTest2<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>tree_confusion2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
@@ -1406,45 +1480,53 @@ Prediction             Non_Diabetic Prediabetic_Diabetic
 <h3 class="anchored" data-anchor-id="classification-tree-model-3">Classification Tree Model 3</h3>
 <p>A table of predicted values for classification tree Model 3 is below.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>pred_tree3 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M3, <span class="at">newdata =</span> diabetesTest3, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilities with actual class labels</span></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table3 <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_tree3, <span class="at">Actual =</span> Actual)</span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_tree_actual_table3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>pred_tree3 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M3, <span class="at">newdata =</span> diabetesTest3, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilities with actual class labels</span></span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table3 <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_tree3, <span class="at">Actual =</span> Actual)</span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table3 <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(pred_tree_actual_table3)</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>pred_tree_actual_table3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Non_Diabetic Prediabetic_Diabetic       Actual
-1    0.6811968            0.3188032 Non_Diabetic
-2    0.9397784            0.0602216 Non_Diabetic
-3    0.9397784            0.0602216 Non_Diabetic
-4    0.9397784            0.0602216 Non_Diabetic
-5    0.8127850            0.1872150 Non_Diabetic
-6    0.9397784            0.0602216 Non_Diabetic</code></pre>
+<pre><code># A tibble: 76,103 × 3
+   Non_Diabetic Prediabetic_Diabetic Actual              
+          &lt;dbl&gt;                &lt;dbl&gt; &lt;fct&gt;               
+ 1        0.681               0.319  Non_Diabetic        
+ 2        0.940               0.0602 Non_Diabetic        
+ 3        0.940               0.0602 Non_Diabetic        
+ 4        0.940               0.0602 Non_Diabetic        
+ 5        0.813               0.187  Non_Diabetic        
+ 6        0.940               0.0602 Non_Diabetic        
+ 7        0.813               0.187  Non_Diabetic        
+ 8        0.396               0.604  Prediabetic_Diabetic
+ 9        0.681               0.319  Prediabetic_Diabetic
+10        0.813               0.187  Non_Diabetic        
+# ℹ 76,093 more rows</code></pre>
 </div>
 </div>
 <p>The log loss output for this model on the test data is below. The log loss for this model is 0.357, the same as that for models 1 and 2.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co">#covert Diabetes_binary to numbers</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>numeric_diabetes3 <span class="ot">&lt;-</span> diabetesTest3 <span class="sc">|&gt;</span></span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> </span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">ifelse</span>(Diabetes_binary <span class="sc">==</span> <span class="st">"Prediabetic_Diabetic"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
-<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best classification tree model</span></span>
-<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>tree_log_loss3 <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes3<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>                          pred_tree3<span class="sc">$</span>Prediabetic_Diabetic)</span>
-<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a>tree_log_loss3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co">#covert Diabetes_binary to numbers</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>numeric_diabetes3 <span class="ot">&lt;-</span> diabetesTest3 <span class="sc">|&gt;</span></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Diabetes_binary =</span> </span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>           <span class="fu">ifelse</span>(Diabetes_binary <span class="sc">==</span> <span class="st">"Prediabetic_Diabetic"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best classification tree model</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>tree_log_loss3 <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes3<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>                          pred_tree3<span class="sc">$</span>Prediabetic_Diabetic)</span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>tree_log_loss3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.3569434</code></pre>
 </div>
 </div>
 <p>The confusion matrix for classification tree Model 3 is presented below. The output results are the same as those for models 1 and 2.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>pred_tree_class3 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M3, <span class="at">newdata =</span> diabetesTest3, </span>
-<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">type =</span> <span class="st">"raw"</span>)</span>
-<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
-<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>tree_confusion3 <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_tree_class3, </span>
-<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a>                                   diabetesTest3<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
-<span id="cb61-8"><a href="#cb61-8" aria-hidden="true" tabindex="-1"></a>tree_confusion3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>pred_tree_class3 <span class="ot">&lt;-</span> <span class="fu">predict</span>(treeFit_M3, <span class="at">newdata =</span> diabetesTest3, </span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>                            <span class="at">type =</span> <span class="st">"raw"</span>)</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>tree_confusion3 <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_tree_class3, </span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>                                   diabetesTest3<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>tree_confusion3</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
@@ -1479,71 +1561,155 @@ Prediction             Non_Diabetic Prediabetic_Diabetic
 </section>
 <section id="random-forest-model-1" class="level3">
 <h3 class="anchored" data-anchor-id="random-forest-model-1">Random Forest Model 1</h3>
-<p>A table of predicted values for the best random forest model is below.</p>
+<p>Recall that the best random forest model was model 1 using “ranger”. A table of predicted values is presented below.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>pred_rf <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfFit_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
-<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>pred_rf_actual_table <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_rf, <span class="at">Actual =</span> Actual)</span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(pred_rf_actual_table)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>pred_ranger <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfFit_ranger_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>pred_ranger_actual_table <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_ranger, <span class="at">Actual =</span> Actual)</span>
+<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>pred_ranger_actual_table <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(pred_ranger_actual_table)</span>
+<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>pred_ranger_actual_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  Non_Diabetic Prediabetic_Diabetic       Actual
-1        0.630                0.370 Non_Diabetic
-2        0.995                0.005 Non_Diabetic
-3        0.985                0.015 Non_Diabetic
-4        0.730                0.270 Non_Diabetic
-5        0.960                0.040 Non_Diabetic
-6        0.975                0.025 Non_Diabetic</code></pre>
+<pre><code># A tibble: 76,103 × 3
+   Non_Diabetic Prediabetic_Diabetic Actual              
+          &lt;dbl&gt;                &lt;dbl&gt; &lt;fct&gt;               
+ 1        0.584               0.416  Non_Diabetic        
+ 2        0.962               0.0376 Non_Diabetic        
+ 3        0.921               0.0789 Non_Diabetic        
+ 4        0.785               0.215  Non_Diabetic        
+ 5        0.936               0.0642 Non_Diabetic        
+ 6        0.989               0.0106 Non_Diabetic        
+ 7        0.709               0.291  Non_Diabetic        
+ 8        0.356               0.644  Prediabetic_Diabetic
+ 9        0.599               0.401  Prediabetic_Diabetic
+10        0.914               0.0857 Non_Diabetic        
+# ℹ 76,093 more rows</code></pre>
 </div>
 </div>
-<p>The log loss for this model on the test data is below. The log loss for this model is infinity, indicating that the model does not generalize well to unseen data. This usually happens when the model is overly confident in its predictions (probabilities are close to 0 or 1) and those predictions are actually incorrect.</p>
+<p>The log loss for this model is 0.322.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best random forest model</span></span>
-<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a><span class="co">#use numeric_diabetes1 since it is the same test set used for logistic regression</span></span>
-<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>rf_log_loss <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>                       pred_rf<span class="sc">$</span>Prediabetic_Diabetic)</span>
-<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>rf_log_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best random forest model</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="co">#use numeric_diabetes1 since it is the same test set used for logistic regression</span></span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>ranger_log_loss <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>                       pred_ranger<span class="sc">$</span>Prediabetic_Diabetic)</span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>ranger_log_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] Inf</code></pre>
+<pre><code>[1] 0.321795</code></pre>
 </div>
 </div>
-<p>The confusion matrix output is below. The accuracy is slightly lower compared to the previous models at 6.14% but the prediction for the Prediabetic_Diabetic class is lower at 48.9%, which is any better than random guessing.</p>
+<p>The confusion matrix is below. The positive predictive value appears more promising than previous models at 61.8%, but the sensitivity is lower, with only 5.9% of all prediabetic/diabetic cases being correctly identified.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
-<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>pred_rf_class <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfFit_M1, <span class="at">newdata =</span> diabetesTest1, </span>
-<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">type =</span> <span class="st">"raw"</span>)</span>
-<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
-<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>rf_confusion <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_rf_class, </span>
-<span id="cb67-6"><a href="#cb67-6" aria-hidden="true" tabindex="-1"></a>                                  diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
-<span id="cb67-7"><a href="#cb67-7" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
-<span id="cb67-8"><a href="#cb67-8" aria-hidden="true" tabindex="-1"></a>rf_confusion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions based on class</span></span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>pred_ranger_class <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfFit_ranger_M1, <span class="at">newdata =</span> diabetesTest1, </span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">type =</span> <span class="st">"raw"</span>)</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate confusion matrix</span></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>ranger_confusion <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_ranger_class, </span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>                                  diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>ranger_confusion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Confusion Matrix and Statistics
 
                       Reference
 Prediction             Non_Diabetic Prediabetic_Diabetic
-  Non_Diabetic                63381                 8563
-  Prediabetic_Diabetic         2119                 2040
+  Non_Diabetic                65116                 9981
+  Prediabetic_Diabetic          384                  622
                                               
-               Accuracy : 0.8596              
-                 95% CI : (0.8571, 0.8621)    
+               Accuracy : 0.8638              
+                 95% CI : (0.8613, 0.8662)    
     No Information Rate : 0.8607              
-    P-Value [Acc &gt; NIR] : 0.7975              
+    P-Value [Acc &gt; NIR] : 0.006338            
                                               
-                  Kappa : 0.2147              
+                  Kappa : 0.0851              
+                                              
+ Mcnemar's Test P-Value : &lt; 2.2e-16           
+                                              
+            Sensitivity : 0.058663            
+            Specificity : 0.994137            
+         Pos Pred Value : 0.618290            
+         Neg Pred Value : 0.867092            
+             Prevalence : 0.139324            
+         Detection Rate : 0.008173            
+   Detection Prevalence : 0.013219            
+      Balanced Accuracy : 0.526400            
+                                              
+       'Positive' Class : Prediabetic_Diabetic
+                                              </code></pre>
+</div>
+</div>
+<p>Simply for comparison purposes, the best random forest model using the “rf” method will be presented here. A table of predicted values for model 1 using “rf” is below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co">#obtain predictions using test data</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>pred_rf <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfFit_M1, <span class="at">newdata =</span> diabetesTest1, <span class="at">type =</span> <span class="st">"prob"</span>)</span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a><span class="co">#combine predicted probabilitie with actual class labels</span></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>pred_rf_actual_table <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(pred_rf, <span class="at">Actual =</span> Actual)</span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>pred_rf_actual_table <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(pred_rf_actual_table)</span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a>pred_rf_actual_table</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 76,103 × 3
+   Non_Diabetic Prediabetic_Diabetic Actual              
+          &lt;dbl&gt;                &lt;dbl&gt; &lt;fct&gt;               
+ 1        0.63                 0.37  Non_Diabetic        
+ 2        0.995                0.005 Non_Diabetic        
+ 3        0.985                0.015 Non_Diabetic        
+ 4        0.73                 0.27  Non_Diabetic        
+ 5        0.96                 0.04  Non_Diabetic        
+ 6        0.975                0.025 Non_Diabetic        
+ 7        0.715                0.285 Non_Diabetic        
+ 8        0.225                0.775 Prediabetic_Diabetic
+ 9        0.48                 0.52  Prediabetic_Diabetic
+10        0.96                 0.04  Non_Diabetic        
+# ℹ 76,093 more rows</code></pre>
+</div>
+</div>
+<p>The log loss for this model on the test data is below. The log loss for this model is infinity, indicating that the model does not generalize well to unseen data. This usually happens when the model is overly confident in its predictions (probabilities are close to 0 or 1) and those predictions are actually incorrect.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate log loss for best random forest model</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a><span class="co">#use numeric_diabetes1 since it is the same test set used for logistic regression</span></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>rf_log_loss <span class="ot">&lt;-</span> <span class="fu">logLoss</span>(numeric_diabetes1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>                       pred_rf<span class="sc">$</span>Prediabetic_Diabetic)</span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>rf_log_loss</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] Inf</code></pre>
+</div>
+</div>
+<p>The confusion matrix output is below. The accuracy is slightly lower compared to the previous models at 85.96% and the prediction for the Prediabetic_Diabetic class is also lower at 48.9%. Interestingly, the sensitivity is 19.1%, which is not good, but better than the other models.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Obtain predictions based on class</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>pred_rf_class <span class="ot">&lt;-</span> <span class="fu">predict</span>(rfFit_M1, <span class="at">newdata =</span> diabetesTest1, </span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">type =</span> <span class="st">"raw"</span>)</span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Calculate confusion matrix</span></span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>rf_confusion <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(pred_rf_class, </span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>                                  diabetesTest1<span class="sc">$</span>Diabetes_binary,</span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">positive =</span> <span class="st">"Prediabetic_Diabetic"</span>)</span>
+<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a>rf_confusion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+                      Reference
+Prediction             Non_Diabetic Prediabetic_Diabetic
+  Non_Diabetic                63380                 8572
+  Prediabetic_Diabetic         2120                 2031
+                                              
+               Accuracy : 0.8595              
+                 95% CI : (0.857, 0.862)      
+    No Information Rate : 0.8607              
+    P-Value [Acc &gt; NIR] : 0.8256              
+                                              
+                  Kappa : 0.2137              
                                               
  Mcnemar's Test P-Value : &lt;2e-16              
                                               
-            Sensitivity : 0.19240             
-            Specificity : 0.96765             
-         Pos Pred Value : 0.49050             
-         Neg Pred Value : 0.88098             
+            Sensitivity : 0.19155             
+            Specificity : 0.96763             
+         Pos Pred Value : 0.48928             
+         Neg Pred Value : 0.88087             
              Prevalence : 0.13932             
-         Detection Rate : 0.02681             
-   Detection Prevalence : 0.05465             
-      Balanced Accuracy : 0.58002             
+         Detection Rate : 0.02669             
+   Detection Prevalence : 0.05454             
+      Balanced Accuracy : 0.57959             
                                               
        'Positive' Class : Prediabetic_Diabetic
                                               </code></pre>
@@ -1553,7 +1719,7 @@ Prediction             Non_Diabetic Prediabetic_Diabetic
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric. The classification trees produced a higher log loss. The random forest model resulted in infinity for log loss, indicating that it does not generalize well to unseen data and is being penalized for having more overly confident predictions close to 0 or 1. Looking at confusion matrices provided more information about the ability of the models to accurately predict the minority class, prediabetic/diabetic. The models were good at predicting non-diabetics, with correct predictions around 87% of the time. In contrast, the prediabetic/diabetic class predictions were in the 50-ish range for accuracy. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package, but not caret.</p>
+<p>Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric, with a log loss of 0.318. The classification trees produced a higher log loss of 0.357. The random forest model resulted in infinity log loss using “rf” and a log loss of 0.322 for “ranger”. The log loss of infinity indicates that the model’s predictions are unreliable due to extreme probability estimates. The “rf” model did have higher sensitivity compared to all of the other models, but practically speaking, if understanding the likelihood of an outcome is important, choosing a model that gives more accurate probabilities is more important. Looking at confusion matrices provided more information about the ability of the models to accurately predict the minority class, prediabetic/diabetic. The models were good at predicting non-diabetics, with correct predictions around 87% of the time. In contrast, the prediabetic/diabetic class predictions were in the 50-ish percent range correctness. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package, but not caret.</p>
 
 
 </section>

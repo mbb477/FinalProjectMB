@@ -12,7 +12,7 @@ options(timeout = 12000)
 
 # Introduction
 
-The goal of this document is to explain the process of model fitting for prediction of diabetes using the Diabetes Health Indicators Dataset from 2015. This data set is a subset of data taken from the Behavioral Risk Factor Surveillance System (BRFSS) run by the Centers for Disease Control and Prevention (CDC). This data is obtained through a health-related telephone survey that is conducted every year. The Diabetes Health Indicators Dataset contains 22 variables and 253,680 observations.
+The goal of this document is to explain the process and results of model fitting for prediction of diabetes using the Diabetes Health Indicators Dataset from 2015. This data set is a subset of data taken from the Behavioral Risk Factor Surveillance System (BRFSS) run by the Centers for Disease Control and Prevention (CDC). This data is obtained through a health-related telephone survey that is conducted every year. The Diabetes Health Indicators Dataset contains 22 variables and 253,680 observations.
 
 For modeling, 3 candidate models will be fit using logistic regression, classification tree and random forest. This will be done using the caret package. Various options are available for measuring performance of the model. Accuracy is the most common measure used and the default in caret for classification models, but log loss will be used here for all models due to the class imbalance in this data set.
 
@@ -87,18 +87,18 @@ The next step is to create new data sets for each of the models and split the da
 
 ### Model 1
 
-Data will be split 70/30 for training and testing. Model 1 data includes all variables, so the imported data above will be used. The createPartition() function from caret is used as it tries to maintain the class distribution (for the Diabetes_binary response variable) for both sets.
+Data will be split 70/30 for training and testing. Since model 1 includes all variables, the imported data above will be used. The createPartition() function from caret is used as it tries to maintain the class distribution (for the Diabetes_binary response variable) for both sets.
 
 ```{r}
-#Set seed for reproducibility
+#set seed for reproducibility
 set.seed(100)
-#partition data
+#Partition data
 trainIndex <- createDataPartition(diabetes1$Diabetes_binary, 
                                   p = 0.7, 
                                   list = FALSE)
-#create training set
+#Create training set
 diabetesTrain1 <- diabetes1[trainIndex, ]
-#create test set
+#Create test set
 diabetesTest1 <- diabetes1[-trainIndex, ]
 diabetesTrain1
 diabetesTest1
@@ -107,7 +107,7 @@ diabetesTest1
 
 ### Model 2
 
-For model 2, we can use the training and test sets above and remove the variables not used for this model.
+For model 2, we can use the training and test sets above for model 1 and remove the variables not used for this model.
 
 ```{r}
 diabetesTrain2 <- diabetesTrain1 |>
@@ -141,11 +141,11 @@ Now that the training and test sets have been created, some models can be fit.
 
 ## Logistic Regression
 
-The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification of a new observation. The event is binary, so typicially refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.
+The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification. The event is binary, so typically refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.
 
 For fitting logistic regression in caret, we need to specify the method as glm, although there are other options. Since our response is binary, the family is "binomial". Since we want to use log loss, we need to specify this as the metric in train() as well as in the trainControl() using summaryFunction (mnLogLoss). When using log loss, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation for the method ("cv") using 5 folds (number).
 
-The fit for Model 1 with all 21 variables is shown below. The log loss for the fit is 0.317.
+The fit for model 1 with all 21 variables is shown below. The log loss for the fit is 0.317.
 
 ```{r}
 #Set seed for reproducibility
@@ -165,14 +165,14 @@ logRegFit_M1
 
 ```
 
-The summary for Model 1 fit is below.
+The summary for model 1 fit is below.
 
 ```{r}
 summary(logRegFit_M1)
 
 ```
 
-Model 2 is fit the same way. Even though variables were selected using EDA, the log loss is slightly worse than that for Model 1, with a value of 0.319.
+Model 2 is fit the same way. Even though variables were selected using EDA, the log loss is slightly higher than that for model 1, with a value of 0.319.
 
 ```{r}
 #Set seed for reproducibility
@@ -191,14 +191,14 @@ logRegFit_M2
 
 ```
 
-The summary of Model 2 is below.
+The summary of model 2 is below.
 
 ```{r}
 summary(logRegFit_M2)
 
 ```
 
-For Model 3 includes the fewest variables, and has the worst log loss, although it isn't that different at 0.320. More important than log loss on the trained model is how the model generalizes to new data.
+Model 3 includes the fewest variables and has the highest log loss, although it isn't that different at 0.320. More important than log loss on the trained model is how the model generalizes to new data.
 
 ```{r}
 #Set seed for reproducibility
@@ -217,20 +217,20 @@ logRegFit_M3
 
 ```
 
-The summary of Model 3 is below.
+The summary of model 3 is below.
 
 ```{r}
 summary(logRegFit_M3)
 
 ```
 
-Overall, Model 1 with 21 variables performed the best using the training set.
+Overall, model 1 with 21 variables is the best model based on the log loss.
 
 ## Classification Tree
 
-Classification trees, also referred to as decision trees, are another way to predict class membership. The predictor space is split into regions in caret using the Gini Index (default). Other methods for splitting include entropy and deviance. The tree is typically pruned back using classification error rate, but in this case, log loss will be used for pruning since it will be specified in trainControl. For purposes of identifying class membership, classification trees assign membership based on the most prevalent class in the region.
+Classification trees, also referred to as decision trees, are another way to predict class membership. The predictor space is split into regions in using the Gini Index or Entropy. The Gini Index measures impurity of a node, which is an indication of how well a node separates the classes. After the tree is grown it is pruned back by removing nodes that do not provide much predictive improvement. For purposes of identifying class membership, classification trees assign membership based on the most prevalent class in the region. Because the diabetes data set has a categorical response variable, the classification tree is appropriate to use for prediction of the two classes.
 
-Fitting a classification tree is similar to logistic regression except the method is "rpart" and we can add a tuning parameter. The tuning parameter is called the complexity parameter (cp) and this parameter helps control the size of the tree. The parameter is a threshold for improvement in the tree at each split and if this threshold is not met the node is not pursued. The complexity parameter also applies to pruning of the tree, but pruning is assessed based on log loss.
+Fitting a classification tree using caret is similar to logistic regression except the method is "rpart" and we can add a tuning parameter. The tuning parameter is called the complexity parameter (cp) and this parameter helps control the size of the tree. The parameter is used for the pruning process and the model evaluated for each cp using log loss. A lower cp means less pruning.
 
 The tree fit for Model 1 is shown before. The algorithm determined that a complexity parameter of 0.002 produced the optimal model with a log loss of 0.356.
 
@@ -289,11 +289,11 @@ treeFit_M3
 
 ```
 
-All 3 models for classification tree fitting had the same log loss so all three will be used in the model comparisons to identify the best model.
+All 3 models for classification tree fitting had the same log loss so all three will be used in the model comparisons to identify the best model overall.
 
 ## Random Forest
 
-Random forest is an ensemble learning method. Ensemble methods produce many trees and average across these trees to determine prediction, often resulting in better predictions. Random forests are similar to bagging, but instead of using all predictors, uses fewer, randomly selected predictors. This helps reduce correlation and variance when there are particularly strong predictors present in the data. The process for random forests involves creating bootstrap samples to fit on which allows the creation of multiple trees to be averaged across. To create bootstrap samples, the data is treated as a population and resampled with replacement. The random forest method is applied to each of these samples, with each sample run creating a tree. The algorithm for determining splits is the same as classification trees, which involves minimizing the Gini Index. Although the word "average" has been used here, for classification this means using majority vote to determine group membership.
+Random forest is an ensemble learning method. Ensemble methods produce many trees and average across these trees to determine prediction, often resulting in better predictions. Random forests are similar to bagging, but instead of using all predictors, uses fewer, randomly selected predictors. This random selection of features occurs at each split. This helps reduce correlation and variance when there are particularly strong predictors present in the data. The process for random forests involves creating bootstrap samples to fit on which allows the creation of multiple trees to be averaged across. To create bootstrap samples, the data is treated as a population and resampled with replacement. The random forest method is applied to each of these samples, each time creating a tree. The algorithm for determining splits is the same as classification trees, which involves minimizing the Gini Index. The randomization of variables and use of bootstrap samples prevents the need for pruning for ensemble methods such as random forests. Although the word "average" has been used here, for classification this means using majority vote to determine group membership. Using random forest is of interest for the models proposed here because it allows assignment of observations to the two classes, Non_Diabetic or Prediabetic_Diabetic, but is often more advantageous than classification trees because it produces many trees and usually results in better predictions.
 
 Random Forest fitting in the caret package uses "rf" for the method. Settings for trainControl are the same as before. Random forests have one available tuning parameter, mtry. The mtry tuning parameter refers to the number of randomly selected predictors to use. You can also specify the number of trees for the model to average, which also corresponds to the number of bootstrap samples. This parameter is ntree and the default in caret is 500 trees. A rule of thumb for mtry for classification trees is the square root of the number of parameters.
 
@@ -359,7 +359,33 @@ rfFit_M3
 
 ```
 
-It is apparent and makes sense that log loss decreases as ntree increases and it would perhaps drop even more if higher ntree were used, but there is a point of diminishing returns and overall the random forest models do not appear to be as good as the logistic regression and classification tree models based off the log loss results. Model 1 was better overall for random forest fitting, with a log loss of 0.421.
+It is apparent and makes sense that log loss decreases as ntree increases and it would perhaps drop even more if higher ntree were used, but there is a point of diminishing returns and overall the random forest models do not appear to be as good as the logistic regression and classification tree models based off the log loss results.
+
+Another option is to use the "ranger" method. It has additional tuning parameters and often computes faster than "rf". Ranger can accept 3 tuning parameters, mtry, splitrule and min.node.size. The splitrule parameter is gini by default. Another option is extratrees, which introduces additional randomness and can be better for data that isn't balanced. The min.node.size parameter refers to the minimum number of observations in terminal nodes. Higher node size makes the model simpler by requiring more observations to make a split.
+
+The "ranger" method was only used on model 1 due to extensive computation times (hours) for optimizing tuning parameters. It was initially run with num.trees 50, mtry 1:21, splitrule extratrees and min.node.size of c(5, 10, 20, 30, 40, 50). The optimal model had an mtry of 5 and a min.node.size of 50. The log loss with these parameters and num.trees 200 is 0.321.
+
+```{r}
+#Set seed for reproducibility
+set.seed(100)
+#Run random forest on model 1
+rfFit_ranger_M1 <- train(Diabetes_binary ~ .,
+                         data = diabetesTrain1,
+                         method = "ranger",
+                         metric = "logLoss",
+                         trControl = trainControl(method = "cv", 
+                                       number = 5,
+                                       classProbs = TRUE,
+                                       summaryFunction = mnLogLoss),
+                         num.trees = 200,
+                         tuneGrid = expand.grid(mtry = 5, 
+                                     splitrule = "extratrees",
+                                     min.node.size = 50))
+rfFit_ranger_M1
+
+```
+
+Overall, the best fit was model 1 using "ranger"., giving a log loss of 0.322.
 
 ## Final Model Selection
 
@@ -378,7 +404,8 @@ pred_logReg <- predict(logRegFit_M1, newdata = diabetesTest1, type = "prob")
 Actual <- diabetesTest1$Diabetes_binary
 #combine predicted probabilities with actual class labels
 pred_logReg_actual_table <- bind_cols(pred_logReg, Actual = Actual)
-head(pred_logReg_actual_table)
+pred_logReg_actual_table <- as_tibble(pred_logReg_actual_table)
+pred_logReg_actual_table
 
 ```
 
@@ -396,7 +423,7 @@ logReg_log_loss
 
 ```
 
-To obtain a confusion matrix, the probabilities need to be converted to class labels. This is done using predict() but specifying "raw" as the type instead of "prob". The confusion matrix can be obtained using confusionMatrix(), which accepts the arguments of the predictions and the actual values from the Diabetes_binary column of the test set. The option for positive was specified to ensure the positive class was correctly assigned. In looking at the output, while the accuracy is 86.5%, it can be seen from the matrix that prediabetic/diabetics have close to the same number of false positives as true positives. This is reflected in the Positive Predictive Value metric, which indicates that when the model predicts Prediabetic_Diabetic, it is correct 55.1% of the time. This is in contrast to the Non_Diabetic class, which is predicted correctly 87.7% of the time. The relatively poor identification of the Prediabetic_Diabetic class is also reflected in the low sensitivity of 15.2%.
+To obtain a confusion matrix, the probabilities need to be converted to class labels. This is done using predict() but specifying "raw" as the type instead of "prob". The confusion matrix can be obtained using confusionMatrix(), which accepts the arguments of the predictions and the actual values from the Diabetes_binary column of the test set. The option for positive was specified to ensure the positive class was correctly assigned. In looking at the output, while the accuracy is 86.5%, it can be seen from the matrix that prediabetic/diabetics have close to the same number of false positives as true positives. This is reflected in the Positive Predictive Value metric, which indicates that when the model predicts prediabetics/diabetics, it is correct 55.1% of the time. This is in contrast to the non-diabetic class, which is predicted correctly 87.7% of the time. The relatively poor identification of the Prediabetic_Diabetic class is also reflected in the low sensitivity of 15.2%, which means that the model correctly identifies 15.2% of all actual prediabetic/diabetic cases.
 
 ```{r}
 #obtain predictions based on class
@@ -418,7 +445,8 @@ A table of predicted values for classification tree Model is below.
 pred_tree1 <- predict(treeFit_M1, newdata = diabetesTest1, type = "prob")
 #combine predicted probabilitie with actual class labels
 pred_tree_actual_table1 <- bind_cols(pred_tree1, Actual = Actual)
-head(pred_tree_actual_table1)
+pred_tree_actual_table1 <- as_tibble(pred_tree_actual_table1)
+pred_tree_actual_table1
 
 ```
 
@@ -433,7 +461,7 @@ tree_log_loss1
 
 ```
 
-The confusion matrix was computed as with the logistic regression model. Accuracy is 86.5%, but is biased because it is better at predicting the Non-Diabetic class. For the Prediabetic_Diabetic class, the model classifies correctly 57.1% of the time. In comparison, the Non_Diabetic class is accurately assigned 87.3% of the time. The somewhat poor classification rate of the minority class is reflected in the low sensitivity, 11.6%. The accuracy is higher than the no information rate, but the small difference between the two suggests that the model is not effectively distinguishing between the classes given the imbalance in the data.
+The confusion matrix was computed as with the logistic regression model. Accuracy is 86.5%, but is biased because it is better at predicting the Non_Diabetic class. For the Prediabetic_Diabetic class, of all positive predictions, the model classifies correctly 57.1% of the time. In comparison, the Non_Diabetic class is accurately assigned 87.3% of the time. The sensitivity is also low, indicating that the model correctly identifies 11.6% of all actual prediabetic/diabetic cases. The accuracy is higher than the no information rate, but the small difference between the two also suggests that the model is not effectively distinguishing between the classes given the imbalance in the data.
 
 ```{r}
 #obtain predictions based on class
@@ -456,8 +484,8 @@ Now we can examine Model 2 for the classification tree. The table of predictions
 pred_tree2 <- predict(treeFit_M2, newdata = diabetesTest2, type = "prob")
 #combine predicted probabilitie with actual class labels
 pred_tree_actual_table2 <- bind_cols(pred_tree2, Actual = Actual)
-head(pred_tree_actual_table2)
-
+pred_tree_actual_table2 <- as_tibble(pred_tree_actual_table2)
+pred_tree_actual_table2
 
 ```
 
@@ -498,7 +526,8 @@ A table of predicted values for classification tree Model 3 is below.
 pred_tree3 <- predict(treeFit_M3, newdata = diabetesTest3, type = "prob")
 #combine predicted probabilities with actual class labels
 pred_tree_actual_table3 <- bind_cols(pred_tree3, Actual = Actual)
-head(pred_tree_actual_table3)
+pred_tree_actual_table3 <- as_tibble(pred_tree_actual_table3)
+pred_tree_actual_table3
 
 ```
 
@@ -535,7 +564,45 @@ The 3 classification tree models produced the same output. The best model should
 
 ### Random Forest Model 1
 
-A table of predicted values for the best random forest model is below.
+Recall that the best random forest model was model 1 using "ranger". A table of predicted values is presented below.
+
+```{r}
+#obtain predictions using test data
+pred_ranger <- predict(rfFit_ranger_M1, newdata = diabetesTest1, type = "prob")
+
+#combine predicted probabilitie with actual class labels
+pred_ranger_actual_table <- bind_cols(pred_ranger, Actual = Actual)
+pred_ranger_actual_table <- as_tibble(pred_ranger_actual_table)
+pred_ranger_actual_table
+
+```
+
+The log loss for this model is 0.322.
+
+```{r}
+#calculate log loss for best random forest model
+#use numeric_diabetes1 since it is the same test set used for logistic regression
+ranger_log_loss <- logLoss(numeric_diabetes1$Diabetes_binary,
+                       pred_ranger$Prediabetic_Diabetic)
+ranger_log_loss
+
+```
+
+The confusion matrix is below. The positive predictive value appears more promising than previous models at 61.8%, but the sensitivity is lower, with only 5.9% of all prediabetic/diabetic cases being correctly identified.
+
+```{r}
+#obtain predictions based on class
+pred_ranger_class <- predict(rfFit_ranger_M1, newdata = diabetesTest1, 
+                           type = "raw")
+#calculate confusion matrix
+ranger_confusion <- confusionMatrix(pred_ranger_class, 
+                                  diabetesTest1$Diabetes_binary,
+                                  positive = "Prediabetic_Diabetic")
+ranger_confusion
+
+```
+
+Simply for comparison purposes, the best random forest model using the "rf" method will be presented here. A table of predicted values for model 1 using "rf" is below.
 
 ```{r}
 #obtain predictions using test data
@@ -543,8 +610,8 @@ pred_rf <- predict(rfFit_M1, newdata = diabetesTest1, type = "prob")
 
 #combine predicted probabilitie with actual class labels
 pred_rf_actual_table <- bind_cols(pred_rf, Actual = Actual)
-
-head(pred_rf_actual_table)
+pred_rf_actual_table <- as_tibble(pred_rf_actual_table)
+pred_rf_actual_table
 
 ```
 
@@ -559,13 +626,13 @@ rf_log_loss
 
 ```
 
-The confusion matrix output is below. The accuracy is slightly lower compared to the previous models at 6.14% but the prediction for the Prediabetic_Diabetic class is lower at 48.9%, which is any better than random guessing.
+The confusion matrix output is below. The accuracy is slightly lower compared to the previous models at 85.96% and the prediction for the Prediabetic_Diabetic class is also lower at 48.9%. Interestingly, the sensitivity is 19.1%, which is not good, but better than the other models.
 
 ```{r}
-#obtain predictions based on class
+#Obtain predictions based on class
 pred_rf_class <- predict(rfFit_M1, newdata = diabetesTest1, 
                            type = "raw")
-#calculate confusion matrix
+#Calculate confusion matrix
 rf_confusion <- confusionMatrix(pred_rf_class, 
                                   diabetesTest1$Diabetes_binary,
                                   positive = "Prediabetic_Diabetic")
@@ -575,4 +642,4 @@ rf_confusion
 
 ## Conclusion
 
-Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric. The classification trees produced a higher log loss. The random forest model resulted in infinity for log loss, indicating that it does not generalize well to unseen data and is being penalized for having more overly confident predictions close to 0 or 1. Looking at confusion matrices provided more information about the ability of the models to accurately predict the minority class, prediabetic/diabetic. The models were good at predicting non-diabetics, with correct predictions around 87% of the time. In contrast, the prediabetic/diabetic class predictions were in the 50-ish range for accuracy. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package, but not caret.
+Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric, with a log loss of 0.318. The classification trees produced a higher log loss of 0.357. The random forest model resulted in infinity log loss using "rf" and a log loss of 0.322 for "ranger". The log loss of infinity indicates that the model's predictions are unreliable due to extreme probability estimates. The "rf" model did have higher sensitivity compared to all of the other models, but practically speaking, if understanding the likelihood of an outcome is important, choosing a model that gives more accurate probabilities is more important. Looking at confusion matrices provided more information about the ability of the models to accurately predict the minority class, prediabetic/diabetic. The models were good at predicting non-diabetics, with correct predictions around 87% of the time. In contrast, the prediabetic/diabetic class predictions were in the 50-ish percent range correctness. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package, but not caret.
