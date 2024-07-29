@@ -389,7 +389,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="logistic-regression" class="level2">
 <h2 class="anchored" data-anchor-id="logistic-regression">Logistic Regression</h2>
-<p>The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification. The event is binary, so refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Datadset to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.</p>
+<p>The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification. The event is binary, so refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Dataset to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.</p>
 <p>For fitting logistic regression in caret, we need to specify the method as glm, although there are other options available. Since our response is binary, the family is “binomial”. Since we want to use log loss, we need to specify this as the metric in train() as well as in the trainControl() using summaryFunction (mnLogLoss). Since log loss uses predicted probabilities to evaluate model performance, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation as the method (“cv”) and 5 folds (number).</p>
 <p>The fit for model 1 with all 21 variables is shown below. The log loss for the fit is 0.317.</p>
 <div class="cell">
@@ -1196,12 +1196,12 @@ Tuning parameter 'mtry' was held constant at a value of 8</code></pre>
 <span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">splitrule =</span> <span class="st">"extratrees"</span>,</span>
 <span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">min.node.size =</span> <span class="dv">50</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Growing trees.. Progress: 99%. Estimated remaining time: 0 seconds.
+<pre><code>Growing trees.. Progress: 95%. Estimated remaining time: 1 seconds.
 Growing trees.. Progress: 96%. Estimated remaining time: 1 seconds.
-Growing trees.. Progress: 97%. Estimated remaining time: 1 seconds.
-Growing trees.. Progress: 97%. Estimated remaining time: 1 seconds.
 Growing trees.. Progress: 96%. Estimated remaining time: 1 seconds.
-Growing trees.. Progress: 66%. Estimated remaining time: 16 seconds.</code></pre>
+Growing trees.. Progress: 95%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 96%. Estimated remaining time: 1 seconds.
+Growing trees.. Progress: 68%. Estimated remaining time: 14 seconds.</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>rfFit_ranger_M1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -1719,7 +1719,7 @@ Prediction             Non_Diabetic Prediabetic_Diabetic
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric, with a log loss of 0.318. The classification trees produced a higher log loss of 0.357. The random forest model resulted in infinity log loss using the “rf” method and a log loss of 0.322 for “ranger”. The log loss of infinity indicates that the model’s predictions are unreliable due to extreme probability estimates. The “rf” model did have higher sensitivity compared to all of the other models, but practically speaking, if understanding the likelihood of an outcome is important, choosing a model that gives more accurate probabilities is preferred. Looking at confusion matrices provided more information about the ability of the models to accurately predict the prediabetic/diabetic minority class. When the models predicted non-diabetics, those predictions were correct around 87% of the time. In contrast, the prediabetic/diabetic class predictions were correct 49-62% of the time, with the percentage of actual prediabetic/diabetic cases correctly identified by the models in the range of only 6-20%. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package and can be used for some methods in caret as well.</p>
+<p>Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric, with a log loss of 0.318. The classification trees produced a higher log loss of 0.357. The random forest model resulted in infinity log loss using the “rf” method and a log loss of 0.322 for “ranger”. The log loss of infinity indicates that the model’s predictions are unreliable due to extreme probability estimates. Looking at confusion matrices provided more information about the ability of the models to accurately predict the prediabetic/diabetic minority class. When the models predicted non-diabetics, those predictions were correct around 87% of the time. In contrast, the prediabetic/diabetic class predictions were correct 49-62% of the time, with the percentage of actual prediabetic/diabetic cases correctly identified by the models in the range of only 6-20%. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package and can be used for some methods in caret as well.</p>
 
 
 </section>
