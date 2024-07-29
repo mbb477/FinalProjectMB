@@ -141,9 +141,9 @@ Now that the training and test sets have been created, some models can be fit.
 
 ## Logistic Regression
 
-The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification. The event is binary, so typically refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Data to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.
+The three models will first be fit using logistic regression. Simply stated, logistic regression calculates the probability of an event occurring based on a data set and uses this information for classification. The event is binary, so refers to yes/no or success/failure. Logistic regression is a generalized linear model that works by linking the response to a function linear in parameters using the logit function, which is the log odds of the event occurring. Since the goal is to use the Diabetes Health Indicators Datadset to predict whether an individual has prediabetes/diabetes or not, logistic regression is appropriate to use.
 
-For fitting logistic regression in caret, we need to specify the method as glm, although there are other options. Since our response is binary, the family is "binomial". Since we want to use log loss, we need to specify this as the metric in train() as well as in the trainControl() using summaryFunction (mnLogLoss). When using log loss, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation for the method ("cv") using 5 folds (number).
+For fitting logistic regression in caret, we need to specify the method as glm, although there are other options available. Since our response is binary, the family is "binomial". Since we want to use log loss, we need to specify this as the metric in train() as well as in the trainControl() using summaryFunction (mnLogLoss). Since log loss uses predicted probabilities to evaluate model performance, classProbs needs to be set at TRUE. For the model fits presented here, trainControl will use cross validation as the method ("cv") and 5 folds (number).
 
 The fit for model 1 with all 21 variables is shown below. The log loss for the fit is 0.317.
 
@@ -385,7 +385,7 @@ rfFit_ranger_M1
 
 ```
 
-Overall, the best fit was model 1 using "ranger"., giving a log loss of 0.322.
+Overall, the best fit was model 1 using "ranger", giving a log loss of 0.322.
 
 ## Final Model Selection
 
@@ -560,7 +560,7 @@ tree_confusion3
 
 ```
 
-The 3 classification tree models produced the same output. The best model should then be the most parsimonious model, which is Model 3 with 8 predictor variables.
+The 3 classification tree models produced the same output. If a choice was to be made among the the three models, the most parsimonious model, Model 3 with 8 predictor variables, could be chosen.
 
 ### Random Forest Model 1
 
@@ -602,7 +602,7 @@ ranger_confusion
 
 ```
 
-Simply for comparison purposes, the best random forest model using the "rf" method will be presented here. A table of predicted values for model 1 using "rf" is below.
+Simply for comparison purposes, the best random forest model using the "rf" method will be presented here as well. A table of predicted values for model 1 using "rf" is below.
 
 ```{r}
 #obtain predictions using test data
@@ -615,7 +615,7 @@ pred_rf_actual_table
 
 ```
 
-The log loss for this model on the test data is below. The log loss for this model is infinity, indicating that the model does not generalize well to unseen data. This usually happens when the model is overly confident in its predictions (probabilities are close to 0 or 1) and those predictions are actually incorrect.
+The log loss for this model on the test data is infinity, indicating that the model does not generalize well to unseen data. This usually happens when the model is overly confident in its predictions (probabilities are close to 0 or 1) and those predictions are actually incorrect.
 
 ```{r}
 #calculate log loss for best random forest model
@@ -626,7 +626,7 @@ rf_log_loss
 
 ```
 
-The confusion matrix output is below. The accuracy is slightly lower compared to the previous models at 85.96% and the prediction for the Prediabetic_Diabetic class is also lower at 48.9%. Interestingly, the sensitivity is 19.1%, which is not good, but better than the other models.
+The confusion matrix output is below. The accuracy is slightly lower compared to the previous models at 85.96% and the predictions assigned to the Prediabetic_Diabetic class were correct 48.9% of the time, lower than the other models. Interestingly, the sensitivity is 19.1%, which is not good, but better than the other models.
 
 ```{r}
 #Obtain predictions based on class
@@ -642,4 +642,4 @@ rf_confusion
 
 ## Conclusion
 
-Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric, with a log loss of 0.318. The classification trees produced a higher log loss of 0.357. The random forest model resulted in infinity log loss using "rf" and a log loss of 0.322 for "ranger". The log loss of infinity indicates that the model's predictions are unreliable due to extreme probability estimates. The "rf" model did have higher sensitivity compared to all of the other models, but practically speaking, if understanding the likelihood of an outcome is important, choosing a model that gives more accurate probabilities is more important. Looking at confusion matrices provided more information about the ability of the models to accurately predict the minority class, prediabetic/diabetic. The models were good at predicting non-diabetics, with correct predictions around 87% of the time. In contrast, the prediabetic/diabetic class predictions were in the 50-ish percent range correctness. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package, but not caret.
+Overall, the logistic regression model using all 21 predictor variables is the best model using log loss as a metric, with a log loss of 0.318. The classification trees produced a higher log loss of 0.357. The random forest model resulted in infinity log loss using the "rf" method and a log loss of 0.322 for "ranger". The log loss of infinity indicates that the model's predictions are unreliable due to extreme probability estimates. The "rf" model did have higher sensitivity compared to all of the other models, but practically speaking, if understanding the likelihood of an outcome is important, choosing a model that gives more accurate probabilities is preferred. Looking at confusion matrices provided more information about the ability of the models to accurately predict the prediabetic/diabetic minority class. When the models predicted non-diabetics, those predictions were correct around 87% of the time. In contrast, the prediabetic/diabetic class predictions were correct 49-62% of the time, with the percentage of actual prediabetic/diabetic cases correctly identified by the models in the range of only 6-20%. These results are not unexpected given that the data is imbalanced. There are options to help balance the classes, such as undersampling and oversampling, that could improve predictions. These options are available in caret in trainControl(). Weights can also be used, which are available in the randomForest package and can be used for some methods in caret as well.
